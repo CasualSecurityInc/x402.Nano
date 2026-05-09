@@ -41,6 +41,6 @@ jobs:
 
       - name: Run integration tests
         env:
-          NANO_SEED: ${{ secrets.NANO_SEED }}
+          NANO_TEST_SEED: ${{ secrets.NANO_TEST_SEED }}
           NANO_RPC_URL: ${{ secrets.NANO_RPC_URL }}
         run: pnpm test:integration

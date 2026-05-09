@@ -247,6 +247,9 @@ pnpm vitest run test/integration/payment-flow.test.ts
 
 **⚠️ Uses real XNO on mainnet.**
 
+- The environment variable providing the wallet seed for real mainnet E2E tests must be `NANO_TEST_SEED`.
+- It is always declared in 64 hex character secret recovery seed format.
+
 Setup:
 ```bash
 cp .env.example .env

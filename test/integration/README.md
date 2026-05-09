@@ -18,6 +18,16 @@ From a single test seed, two accounts are derived:
 
 This ensures payments flow between different addresses (avoiding acct0→acct0 which is meaningless).
 
+## Parallelism Posture
+
+The real-mainnet E2E suite currently runs as a **single-slot flow**:
+
+- `acct0` = client / sweep target
+- `acct1` = server / temporary receiver
+- no parallel account window
+
+This is intentional. If we later add multiple concurrent funded actors or multiple independent mainnet scenarios, that repo can grow its own bounded local account-plan module. Until then, `PARALLELISM=1` keeps account usage obvious and cleanup simple.
+
 ## Setup
 
 1. Copy the example environment file (files are in this directory):
@@ -27,7 +37,7 @@ This ensures payments flow between different addresses (avoiding acct0→acct0 w
 
 2. Edit `.env` with your test wallet seed:
    ```bash
-   NANO_SEED=your_64_char_hex_seed_here
+   NANO_TEST_SEED=your_64_char_hex_seed_here
    NANO_RPC_URL=https://rpc.nano.to
    NANO_MAX_SPEND=1000000000000000000000000000  # 0.001 XNO in raw
    ```
@@ -102,13 +112,13 @@ pnpm test
 - **Automatic sweep**: Funds are returned to Account #0 after test
 - **Balance checks**: Test validates sufficient balance before attempting payments
 - **Maximum spend**: Hard limit per test (default 0.001 XNO)
-- **Auto-skip**: Tests skip gracefully if `NANO_SEED` is not set
+- **Auto-skip**: Tests skip gracefully if `NANO_TEST_SEED` is not set
 
 ## Troubleshooting
 
-**Test skips with "NANO_SEED not set"**
+**Test skips with "NANO_TEST_SEED not set"**
 - Ensure `.env` file exists in project root
-- Check that NANO_SEED is set to a valid 64-character hex string
+- Check that `NANO_TEST_SEED` is set to a valid 64-character hex string
 
 **"Insufficient balance" errors**
 - Account #0 (derived from seed with index 0) needs balance
@@ -174,7 +184,7 @@ Integration tests can also run in CI via manual trigger.
 
    | Secret | Description |
    |--------|-------------|
-   | `NANO_SEED` | 64-char hex seed (Account #0 must be funded) |
+   | `NANO_TEST_SEED` | 64-char hex secret recovery seed (Account #0 must be funded) |
    | `NANO_RPC_URL` | RPC endpoint, optionally with API key in query params |
 
 ### Running

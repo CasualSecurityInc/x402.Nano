@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { createServer } from 'http';
 import * as dotenv from 'dotenv';
-import { deriveSecretKey, derivePublicKey, createBlock, signBlock, computeWork, validateWork, type BlockData } from 'nanocurrency';
+import { deriveSecretKey, derivePublicKey, deriveAddress, createBlock, signBlock, computeWork, validateWork, type BlockData } from 'nanocurrency';
 import { NanoSessionFacilitatorHandler } from '@nanosession/facilitator';
-import { NanoSessionPaymentHandler, deriveAddressFromSeed } from '@nanosession/client';
+import { NanoSessionPaymentHandler } from '@nanosession/client';
 import { NanoRpcClient } from '@nanosession/rpc';
 import { encodePaymentRequired, decodePaymentRequired, decodePaymentSignature, encodePaymentSignature } from '@nanosession/core';
 import type { PaymentRequirements } from '@nanosession/core';
@@ -21,7 +21,7 @@ describe('Integration: Full Payment Flow', () => {
   let clientSecretKey = '';
   let serverSecretKey = '';
   let serverPublicKey = '';
-  let rpcClient: NanoRpcClient;
+  let rpcClient: NanoRpcClient | null = null;
   let rpcUrls: string[] = [];
   let hasRpcCredentials = false;
 
@@ -62,6 +62,10 @@ describe('Integration: Full Payment Flow', () => {
   };
 
   const getAccountInfoSafe = async (address: string) => {
+    if (!rpcClient) {
+      throw new Error('RPC client not initialized');
+    }
+
     try {
       return await rpcClient.getAccountInfo(address);
     } catch (error) {
@@ -285,6 +289,10 @@ describe('Integration: Full Payment Flow', () => {
   };
 
   const waitForConfirmation = async (hash: string, timeoutMs: number = 30000) => {
+    if (!rpcClient) {
+      throw new Error('RPC client not initialized');
+    }
+
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       const blockInfo = await rpcClient.getBlockInfo(hash);
@@ -308,20 +316,28 @@ describe('Integration: Full Payment Flow', () => {
 
 
   beforeAll(async () => {
-    seed = process.env.NANO_SEED || '';
+    seed = process.env.NANO_TEST_SEED || '';
     if (!seed) {
-      skipReason = 'NANO_SEED not set';
+      skipReason = 'NANO_TEST_SEED not set';
       console.log(`\n⚠️  Skipping integration tests: ${skipReason}`);
       console.log('   Create .env file from .env.example to run integration tests\n');
       shouldSkip = true;
       return;
     }
 
-    clientAddress = deriveAddressFromSeed(seed, 0);
-    serverAddress = deriveAddressFromSeed(seed, 1);
-    clientSecretKey = deriveSecretKey(seed, 0);
-    serverSecretKey = deriveSecretKey(seed, 1);
-    serverPublicKey = derivePublicKey(serverSecretKey);
+    try {
+      clientSecretKey = deriveSecretKey(seed, 0);
+      serverSecretKey = deriveSecretKey(seed, 1);
+      clientAddress = deriveAddress(derivePublicKey(clientSecretKey), { useNanoPrefix: true });
+      serverAddress = deriveAddress(derivePublicKey(serverSecretKey), { useNanoPrefix: true });
+      serverPublicKey = derivePublicKey(serverSecretKey);
+    } catch (error) {
+      shouldSkip = true;
+      skipReason = error instanceof Error ? `invalid NANO_TEST_SEED: ${error.message}` : 'invalid NANO_TEST_SEED';
+      console.log(`\n⚠️  Skipping integration tests: ${skipReason}`);
+      return;
+    }
+
     const rpcUrlsEnv = process.env.NANO_RPC_URLS || process.env.NANO_RPC_URL || 'https://rpc.nano.to';
     rpcUrls = rpcUrlsEnv.split(',').map(u => u.trim()).filter(Boolean);
     
@@ -337,9 +353,10 @@ describe('Integration: Full Payment Flow', () => {
     hasRpcCredentials = rpcUrls.some(url => url.includes('?') && new URL(url).searchParams.has('key'));
     
 
-    console.log('\n🔑 Test Accounts:');
+    console.log('\n🔑 Test Accounts (single-slot mainnet E2E):');
     console.log(`   Client (acct0): ${clientAddress}`);
     console.log(`   Server (acct1): ${serverAddress}`);
+    console.log('   Parallelism: 1 (intentional for this repo\'s real-mainnet suite)');
     if (hasRpcCredentials) {
       console.log('   🔧 Work generation: RPC (credentials detected)');
     } else {
@@ -348,7 +365,7 @@ describe('Integration: Full Payment Flow', () => {
   });
 
   afterAll(async () => {
-    if (shouldSkip || !seed) {
+    if (shouldSkip || !seed || !rpcClient) {
       return;
     }
 
@@ -378,7 +395,7 @@ describe('Integration: Full Payment Flow', () => {
         return;
       }
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
 
       const clientAccountInfo = await getAccountInfoSafe(clientAddress);
       if (!clientAccountInfo) {
@@ -583,7 +600,7 @@ describe('Integration: Full Payment Flow', () => {
       // 4. Attacker tries to use victim's blockHash with sessionId B
       // 5. Server MUST reject: tag A ≠ tag B
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
 
       // Get requirements for two different "sessions"
       const victimRequirements = serverHandler.getRequirements({
@@ -654,7 +671,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Receipt Reuse (Double Spend Attempt)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
 
       const requirements = serverHandler.getRequirements({
         resourceAmountRaw: paymentAmount,
@@ -713,7 +730,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Session Spoofing (Unknown Session)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
 
       // Create a real payment for a real session
       const realRequirements = serverHandler.getRequirements({
@@ -787,6 +804,7 @@ describe('Integration: Full Payment Flow', () => {
 
       const serverHandler = new NanoSessionFacilitatorHandler({
         rpcClient,
+        tagModulus: 1000000,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'
@@ -848,6 +866,7 @@ describe('Integration: Full Payment Flow', () => {
 
       const serverHandler = new NanoSessionFacilitatorHandler({
         rpcClient,
+        tagModulus: 1000000,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'
