@@ -22,7 +22,7 @@ export default withMermaid(defineConfig({
         nav: [
             { text: 'Intro', link: '/' },
             { text: 'Protocol', link: '/protocol' },
-            { text: 'Demo', link: '/protected' }
+            // { text: 'Demo', link: '/protected' }
         ],
 
         sidebar: [
@@ -30,7 +30,7 @@ export default withMermaid(defineConfig({
                 text: 'About',
                 items: [
                     { text: 'Intro', link: '/' },
-                    { text: 'Protected Demo (legacy)', link: '/protected' }
+                    // { text: 'Protected Demo (legacy)', link: '/protected' }
                 ]
             },
             {
@@ -42,18 +42,18 @@ export default withMermaid(defineConfig({
                     { text: 'Ecosystem', link: '/ecosystem' }
                 ]
             },
-            {
-                text: 'Live Demos',
-                items: [
-                    { text: 'Track A Demo', link: '/demo-track-a' },
-                    { text: 'Track B Demo', link: '/demo-track-b' }
-                ]
-            },
+            // {
+            //     text: 'Live Demos',
+            //     items: [
+            //         { text: 'Track A Demo', link: '/demo-track-a' },
+            //         { text: 'Track B Demo', link: '/demo-track-b' }
+            //     ]
+            // },
             {
                 text: 'Links',
                 items: [
                     { text: '↗ GitHub', link: 'https://github.com/CasualSecurityInc/x402.Nano' },
-                    { text: '↗ x402 Spec', link: 'https://docs.x402.org' },
+                    { text: '↗ x402.org', link: 'https://www.x402.org/' },
                     { text: '↗ Nano.org', link: 'https://nano.org' }
                 ]
             }

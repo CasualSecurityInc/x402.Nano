@@ -48,4 +48,4 @@ These can be deployed as a single monolithic service or as separate components, 
 - **[Protocol Specification](./protocol.md)**: Shared architecture, threat model, and security analysis.
 - **[Track A: nanoTxn](./extensions/track-a-nanotxn.md)**: Signed-block wire format and verification.
 - **[Track B: nanoSignature](./extensions/track-b-nanosignature.md)**: NOMS post-payment proof wire format and verification.
-- **[Ecosystem Landscape](./nano-x402-landscape.md)**: Side-by-side comparison with other Nano x402 implementations.
+- **[Ecosystem Landscape](./ecosystem.md)**: Side-by-side comparison with other Nano x402 implementations.
