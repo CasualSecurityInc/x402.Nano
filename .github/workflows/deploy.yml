@@ -34,7 +34,6 @@ jobs:
 
       - name: Build site
         env:
-          SPEC_REV: ${{ vars.SPEC_REV }}
           VITE_MAINNET_DEMO_URL: ${{ vars.VITE_MAINNET_DEMO_URL }}
           VITE_ENABLE_TESTNET_TAB: ${{ vars.VITE_ENABLE_TESTNET_TAB }}
           VITE_ENABLE_XNAP: ${{ vars.VITE_ENABLE_XNAP }}

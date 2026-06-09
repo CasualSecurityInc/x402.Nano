@@ -136,7 +136,7 @@ See [`examples/faremeter-server/`](../../examples/faremeter-server/) for a compl
 
 ## Documentation
 
-Full protocol specification and guides: <https://csi.ninzin.net/x402.NanoSession/>
+Full protocol specification and guides: <https://csi.ninzin.net/x402.Nano/>
 
 ## License
 

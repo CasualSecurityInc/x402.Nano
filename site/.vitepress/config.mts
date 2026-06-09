@@ -2,9 +2,9 @@ import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(defineConfig({
-    title: "x402.NanoSession",
+    title: "x402.Nano",
     description: "Feeless, instant machine-to-machine payments via HTTP 402 using Nano cryptocurrency",
-    base: '/x402.NanoSession/',
+    base: '/x402.Nano/',
     head: [
         ['meta', { name: 'google-site-verification', content: 'VgY_8BRCQtKfSIeArkhfYHFkP8q5YL9vELKICxFOlmQ' }]
     ],
@@ -37,7 +37,7 @@ export default withMermaid(defineConfig({
                 ]
             },
             {
-                text: 'Live Demos (Rev 8)',
+                text: 'Live Demos',
                 items: [
                     { text: 'Track A Demo', link: '/demo-track-a' },
                     { text: 'Track B Demo', link: '/demo-track-b' }
@@ -46,7 +46,7 @@ export default withMermaid(defineConfig({
             {
                 text: 'Links',
                 items: [
-                    { text: '↗ GitHub', link: 'https://github.com/CasualSecurityInc/x402.NanoSession' },
+                    { text: '↗ GitHub', link: 'https://github.com/CasualSecurityInc/x402.Nano' },
                     { text: '↗ x402 Spec', link: 'https://docs.x402.org' },
                     { text: '↗ Nano.org', link: 'https://nano.org' }
                 ]
@@ -54,7 +54,7 @@ export default withMermaid(defineConfig({
         ],
 
         socialLinks: [
-            { icon: 'github', link: 'https://github.com/CasualSecurityInc/x402.NanoSession' }
+            { icon: 'github', link: 'https://github.com/CasualSecurityInc/x402.Nano' }
         ],
 
         footer: {

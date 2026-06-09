@@ -2,7 +2,7 @@
 title: Protected Content Demo
 ---
 
-# x402.NanoSession Rev 8 — Protected Content Demos
+# x402.Nano — Protected Content Demos
 
 **New dedicated flows (recommended):**
 
@@ -18,7 +18,7 @@ Both flows give you:
 
 ## Legacy single demo (being phased out)
 
-The content below describes the older undifferentiated flow. Use the two dedicated pages above for accurate Rev 8 Track A / Track B experiences.
+The content below describes the older undifferentiated flow. Use the two dedicated pages above for accurate Track A / Track B experiences.
 
 ## Flow
 
@@ -45,7 +45,7 @@ The important sequence is:
 
 ## Security
 
-This flow implements the NanoNym receipt exact path (Path B) from the Rev 8 protocol:
+This flow implements the NanoNym receipt exact path (Path B) from the protocol:
 
 - **Pay first**: the client pays before receiving access, avoiding the frontier dilemma of pre-signed blocks.
 - **Exact raw amounts**: the challenge amount includes a unique tag to prevent cross-challenge borrowing.

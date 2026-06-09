@@ -1,5 +1,5 @@
 /**
- * Minimalist HTTP CLI for x402.NanoSession
+ * Minimalist HTTP CLI for x402.Nano
  * 
  * Demonstrates basic interaction with x402 protected resources supporting 
  * Track 1 (nanoSession) and Track 2 (nanoSignature) mechanisms.

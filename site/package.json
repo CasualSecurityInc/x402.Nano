@@ -2,7 +2,7 @@
   "name": "x402-nanosession-docs",
   "private": true,
   "version": "1.0.1",
-  "description": "Documentation site for x402.NanoSession Protocol",
+  "description": "Documentation site for x402.Nano Protocol",
   "scripts": {
     "site:prepare": "node scripts/prepare-rev.js",
     "site:dev": "pnpm site:prepare && concurrently --kill-others -n source,vitepress \"chokidar '../docs/*.md' 'protected.md' -c 'pnpm site:prepare'\" \"vitepress dev .\"",

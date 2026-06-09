@@ -41,8 +41,8 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/protected', protectedRoute);
 app.use('/api/poll-for-demo', pollRoute);
 
-// New Rev 8 per-track demo checkout routes (separate pages for Track A and Track B,
-// stable per-invoice deposits, proper Rev 8 shapes).
+// Per-track demo checkout routes (separate pages for Track A and Track B,
+// stable per-invoice deposits, proper payment shapes).
 app.use('/api/demo', createDemoTracksRouter());
 
 // Parse binding PORT from the Unified Server URL (12-factor standard)
@@ -61,7 +61,7 @@ try {
 
 server.listen(PORT, HOST, () => {
   console.log(`Demo X402 Facilitator Server running on ${HOST}:${PORT}`);
-  console.log('Rev 8 demo tracks available at /api/demo/track-a and /api/demo/track-b (per-invoice deposits + stable sessions)');
+  console.log('Demo tracks available at /api/demo/track-a and /api/demo/track-b (per-invoice deposits + stable sessions)');
   if (NANO_TEST_SEED) {
     console.log('Using NANO_TEST_SEED for per-invoice deposit derivation');
   } else {

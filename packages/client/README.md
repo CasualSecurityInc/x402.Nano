@@ -47,7 +47,7 @@ const payload = await paymentHandler.createPayment(paymentRequirements);
 
 ## Documentation
 
-Full protocol documentation: [https://csi.ninzin.net/x402.NanoSession/](https://csi.ninzin.net/x402.NanoSession/)
+Full protocol documentation: [https://csi.ninzin.net/x402.Nano/](https://csi.ninzin.net/x402.Nano/)
 
 ## License
 

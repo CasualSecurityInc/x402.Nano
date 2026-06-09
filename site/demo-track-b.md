@@ -2,11 +2,11 @@
 title: Track B Demo
 ---
 
-# Rev 8 Track B (nanoSignature) — Live Demo Checkout
+# Track B (nanoSignature) — Live Demo Checkout
 
 This page demonstrates a **stable per-invoice deposit** checkout flow for **Track B**.
 
-- The server issues a proper Rev 8 `exact` PaymentRequirements with `extra.nonce` + `extra.validBefore`.
+- The server issues a proper `exact` PaymentRequirements with `extra.nonce` + `extra.validBefore`.
 - The deposit address is stable for the lifetime of the checkout session (reload-safe).
 - Use the Manual tab with any external wallet, or the Xnap tab for a more capable wallet integration.
 - The big red **Restart session** button at the bottom releases the current deposit and starts fresh.

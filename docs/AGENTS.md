@@ -2,7 +2,7 @@
 
 ## 📖 Specifications
 
-This directory contains the **Canonical Source of Truth** for the x402.NanoSession protocol. All changes to the protocol must happen here.
+This directory contains the **Canonical Source of Truth** for the x402.Nano protocol. All changes to the protocol must happen here.
 
 **🚨 CRITICAL RULE:** **NEVER modify files under `docs/old/`**. The maintainer will gradually move previous versions of the spec in under there for archival purposes only.
 
@@ -31,7 +31,7 @@ Use `OpenRai/Standards` as the authoritative Nano standards reference:
 
 For x402/Nano public interoperability, use `network: "nano:mainnet"` per ORIS-006. Do not invent or emit `nano:testnet`, `nano:beta`, `nano:devnet`, or `nano:local` unless a future ORIS document standardizes them.
 
-For Rev 8's `nanoSignature` track, treat OpenRai/Standards ORIS-001 as normative for NOMS. Local x402.NanoSession docs may define x402 binding and deployment policy, but should not fork NOMS encoding or signing semantics.
+For the `nanoSignature` track, treat OpenRai/Standards ORIS-001 as normative for NOMS. Local x402.Nano docs may define x402 binding and deployment policy, but should not fork NOMS encoding or signing semantics.
 
 ### Ecosystem References (SECONDARY)
 
@@ -77,14 +77,14 @@ Quick mapping:
 
 ### 📝 Naming Convention
 
-Files follow a strict pattern to support multiple revisions and automated site generation:
+Active protocol documents use simple flat names:
 
-`x402_NanoSession_rev<X>_<Role>.md`
+*   `index.md` — Introduction and overview
+*   `protocol.md` — Core specification
+*   `track-a-nanotxn.md` — Track A extension
+*   `track-b-nanosignature.md` — Track B extension
 
-*   **revX**: Revision number (e.g., `rev3`). Allows historical versions to coexist.
-*   **Role**:
-    *   `Protocol`: The core specification. There is only ONE per revision.
-    *   `Extension_<Name>`: Optional extension documents.
+Older revisions are archived under `docs/old/` with their original `_revX_` prefixed names.
 
 ### 🔗 Relationships
 
@@ -97,7 +97,7 @@ Files follow a strict pattern to support multiple revisions and automated site g
 
 1.  **Drafting**: Start a new file with `Status: Draft`.
 2.  **Review**: Once reviewed, update to `Status: Proposed` or `Accepted`.
-3.  **Site Gen**: The build script in `../site/scripts/prepare-rev.js` automatically picks up files matching the `SPEC_REV` environment variable.
+3.  **Site Gen**: The build script in `../site/scripts/prepare-rev.js` copies docs to the VitePress source directory.
 
 ### 🔐 Security Review Requirements
 
@@ -109,7 +109,7 @@ The Rev 7 specification includes the formal Security Model for the **Receipt-Ste
 
 Before finalizing any protocol change:
 
-1. **Read §1 Security Model** in `x402_NanoSession_Rev 7_Protocol.md`
+1. **Read §1 Security Model** in `protocol.md`
 2. **Review the Session Binding Invariant** — sessions are security primitives
 3. **Check attack vectors**:
    - Receipt theft (hash from different session)

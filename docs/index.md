@@ -45,6 +45,6 @@ These can be deployed as a single monolithic service or as separate components, 
 
 ## Next Steps
 
-- **[Protocol Specification](./x402_NanoSession_rev8_Protocol.md)**: Shared architecture, threat model, and security analysis.
-- **[Track A: nanoTxn](./x402_NanoSession_rev8_Track_A_nanoTxn.md)**: Signed-block wire format and verification.
-- **[Track B: nanoSignature](./x402_NanoSession_rev8_Track_B_nanoSignature.md)**: NOMS post-payment proof wire format and verification.
+- **[Protocol Specification](./protocol.md)**: Shared architecture, threat model, and security analysis.
+- **[Track A: nanoTxn](./extensions/track-a-nanotxn.md)**: Signed-block wire format and verification.
+- **[Track B: nanoSignature](./extensions/track-b-nanosignature.md)**: NOMS post-payment proof wire format and verification.

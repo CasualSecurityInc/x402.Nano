@@ -12,7 +12,7 @@
 
 ## 🌐 Documentation Website
 
-This directory contains the VitePress project for the x402.NanoSession documentation.
+This directory contains the VitePress project for the x402.Nano documentation.
 
 ---
 
@@ -22,7 +22,7 @@ This directory contains the VitePress project for the x402.NanoSession documenta
 
 | Component | Platform | URL | Workflow |
 |-----------|----------|-----|----------|
-| **Static Docs** | GitHub Pages | `https://csi.ninzin.net/x402.NanoSession/` | `.github/workflows/deploy.yml` |
+| **Static Docs** | GitHub Pages | `https://csi.ninzin.net/x402.Nano/` | `.github/workflows/deploy.yml` |
 | **Demo Server(s)** | fly.io | Separate subdomain(s) | Manual / `pnpm deploy:fly:*` |
 
 **Important:** The Protected Resource demo server(s) deploy to an **external hosting platform (fly.io)** and must be treated separately from the docs site. The static docs are served from GitHub Pages (CasualSecurityInc org) behind a CloudFlare proxy.
@@ -34,15 +34,13 @@ This directory contains the VitePress project for the x402.NanoSession documenta
 We do **not** edit markdown files in `site/gen/docs/` directly. Instead, we generate them from `../docs/` at build time.
 
 **The Script Logic:**
-1.  Reads `SPEC_REV` env var (set this to `rev8`).
-2.  **Cleans**: Deletes `site/gen/docs/`.
-3.  **Copies & Renames**:
-    *   `../docs/..._Protocol.md` -> `site/gen/docs/index.md`
-    *   `../docs/..._Extension_Name.md` -> `site/gen/docs/extensions/name.md`
-4.  **Injects Navigation**:
-    *   Adds "Tree View" to Protocol.
-    *   Adds "See Also" links to Protocol.
-    *   Adds "Back to Protocol" link to Extensions.
+1.  **Cleans**: Deletes `site/gen/docs/`.
+2.  **Copies**:
+    *   `../docs/index.md` -> `site/gen/docs/index.md`
+    *   `../docs/protocol.md` -> `site/gen/docs/protocol.md`
+    *   `../docs/track-a-nanotxn.md` -> `site/gen/docs/extensions/track-a-nanotxn.md`
+    *   `../docs/track-b-nanosignature.md` -> `site/gen/docs/extensions/track-b-nanosignature.md`
+3.  **Copies Demo Pages**: `protected.md`, `demo-track-a.md`, `demo-track-b.md`
 
 **⚠️ AGENT POLICY**
 1. **Hardcoded Revisions**: The build script does not perform magic string replacement for document bodies. You must manually grep and update any hardcoded string matches (e.g. `using the **Rev 6** protocol flow` or `Rev. 6`) across `site/*.md` whenever you bump the protocol revision.
@@ -99,7 +97,7 @@ pnpm dev:demo
 |---------|---------|
 | `pnpm dev:demo` | All: site watcher + VitePress (5173) + demo server (3001) |
 | `pnpm site:dev` | Site only: source watcher + VitePress (5173) |
-| `pnpm site:build` | Build static site (set `SPEC_REV=rev8`) |
+| `pnpm site:build` | Build static site |
 | `pnpm demo:mainnet` | Demo server only: mainnet (3001) |
 
 **Note:** `site:dev` watches `../docs/*.md` and `protected.md` for changes and rebuilds automatically.

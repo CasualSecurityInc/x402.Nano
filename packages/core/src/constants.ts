@@ -1,5 +1,5 @@
 /**
- * x402.NanoSession Rev 8 Constants
+ * x402.Nano Constants
  */
 
 import type { Network } from './types.js';

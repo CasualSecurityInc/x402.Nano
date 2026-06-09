@@ -47,7 +47,7 @@ NanoSessionFacilitatorHandler uses **session binding** to prevent receipt-steali
 
 ## Documentation
 
-Full protocol specification and guides: <https://csi.ninzin.net/x402.NanoSession/>
+Full protocol specification and guides: <https://csi.ninzin.net/x402.Nano/>
 
 ## License
 

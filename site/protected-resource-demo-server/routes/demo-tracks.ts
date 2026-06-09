@@ -27,7 +27,7 @@ const ASSET = 'XNO';
 export interface DemoSession {
   deposit: string;
   track: 'a' | 'b';
-  issued: any; // The exact PaymentRequirements object we emitted (Rev 8 shape)
+  issued: any; // The exact PaymentRequirements object we emitted
   nonce?: string; // 64 hex chars, only for track b
   validBefore: number;
   amountRaw: string;
@@ -74,7 +74,7 @@ function getResourceUrl(req: Request, track: 'a' | 'b'): string {
 }
 
 /**
- * Issue (or resume) a proper Rev 8 challenge for the given track.
+ * Issue (or resume) a proper challenge for the given track.
  * If a deposit is supplied in the query and it has an active unpaid session for the track,
  * we return the same stable session (supports ?deposit=... URL resume).
  */
@@ -99,7 +99,7 @@ function issueOrResume(track: 'a' | 'b', suppliedDeposit?: string) {
     deposit = allocatePerInvoiceDeposit();
   }
 
-  // Build the exact Rev 8 PaymentRequirements shape for this track.
+  // Build the exact PaymentRequirements shape for this track.
   const base = {
     scheme: SCHEME,
     network: NETWORK,
@@ -155,7 +155,7 @@ export function createTrackRouter(track: 'a' | 'b') {
         x402Version: 2,
         resource: {
           url: getResourceUrl(req, track),
-          description: `x402.NanoSession Rev 8 Track ${track.toUpperCase()} demo checkout`,
+          description: `x402.Nano Track ${track.toUpperCase()} demo checkout`,
           mimeType: 'text/html',
         },
         accepts: [session.issued],
@@ -249,7 +249,7 @@ export function createTrackRouter(track: 'a' | 'b') {
   });
 
   /**
-   * Redeem / verify endpoint for Rev 8 tracks.
+   * Redeem / verify endpoint for tracks.
    * - For Track A with full signed block in payload.block: Facilitator validates, submits via process, polls for confirmation (settled per block lattice), reports back.
    * - Supports NOMS-signed for Track B and receipt-style for manual/external wallets.
    * All steps are observable; client logs submission and response.
@@ -357,7 +357,7 @@ export function createTrackRouter(track: 'a' | 'b') {
         session.detectedBlockHash = txHash;
         session.settledAt = Date.now();
         session.settledResult = {
-          version: 'rev8',
+          version: '1.0',
           track: 'a',
           mode: 'settled',
           deposit,
@@ -408,7 +408,7 @@ export function createTrackRouter(track: 'a' | 'b') {
       session.detectedBlockHash = txHash;
       session.settledAt = Date.now();
       session.settledResult = {
-        version: 'rev8',
+        version: '1.0',
         track: 'a',
         mode: 'settled',
         deposit,
@@ -502,7 +502,7 @@ export function createTrackRouter(track: 'a' | 'b') {
       session.detectedPayerAccount = p.account || blockInfo.account;
       session.settledAt = Math.floor(Date.now() / 1000);
       session.settledResult = {
-        version: 'rev8',
+        version: '1.0',
         track,
         mode: 'settled',
         deposit,
@@ -530,7 +530,7 @@ export function createTrackRouter(track: 'a' | 'b') {
     session.detectedPayerAccount = p.account || blockInfo.account;
     session.settledAt = Math.floor(Date.now() / 1000);
     session.settledResult = {
-      version: 'rev8',
+      version: '1.0',
       track,
       mode: 'settled',
       deposit,
@@ -549,7 +549,7 @@ export function createTrackRouter(track: 'a' | 'b') {
       .setHeader('PAYMENT-RESPONSE', encoded)
       .json({
         success: true,
-        html: `<div class="exclusive-content"><p>Unlocked via Rev 8 Track ${track.toUpperCase()}.</p></div>`,
+          html: `<div class="exclusive-content"><p>Unlocked via Track ${track.toUpperCase()}.</p></div>`,
       });
   });
 

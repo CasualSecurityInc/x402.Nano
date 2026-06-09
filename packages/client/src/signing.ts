@@ -81,7 +81,7 @@ export function signBlock(block: SendBlockParams, secretKey: Uint8Array): string
 /**
  * Signs an off-chain message using canonical NOMS (ORIS-001) from @openrai/nano-core.
  *
- * This is the correct implementation for Rev 8 Track B (nanoSignature).
+ * This is the correct implementation for Track B (nanoSignature).
  * The message (e.g. "<blockHash>:<nonce>:<validBefore>") is wrapped with the
  * NOMS payload format before hashing and signing.
  *

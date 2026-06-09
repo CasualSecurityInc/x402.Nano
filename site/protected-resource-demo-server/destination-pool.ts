@@ -29,7 +29,7 @@ export function resetDemoDestinationPoolForTests() {
 
 /**
  * Legacy helper – kept for the old /api/protected route and existing tests during transition.
- * New Rev 8 track flows should use allocatePerInvoiceDeposit + reserve/release.
+ * New track flows should use allocatePerInvoiceDeposit + reserve/release.
  *
  * This preserves the original small cycling pool behavior so the legacy demo and its tests
  * continue to work unchanged while we build out the new per-track stable flows.

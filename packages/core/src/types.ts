@@ -1,8 +1,7 @@
 /**
- * x402.NanoSession Rev 8 Types
+ * x402.Nano Types
  * 
- * Simplified single-track binding using nanoMacaroon mechanism.
- * Clean break from Rev 6/7 - no backward compatibility.
+ * Unified type system supporting both nanoMacaroon mechanism and legacy session/signature tracks.
  */
 
 import type {
@@ -20,7 +19,26 @@ import type {
 export type { Network, Challenge, SettlementProof, SettlementResult, AccessProof, MacaroonCredential };
 
 /**
- * x402 V2 Payment Required response (Rev 8)
+ * Track A (nanoSession) extra data embedded in PaymentRequirements
+ */
+export interface NanoSessionExtra {
+  id: string;
+  tag: number;
+  resourceAmountRaw: string;
+  tagAmountRaw: string;
+  expiresAt?: string;
+}
+
+/**
+ * Track B (nanoSignature) extra data embedded in PaymentRequirements
+ */
+export interface NanoSignatureExtra {
+  url: string;
+  messageToSign?: string;
+}
+
+/**
+ * x402 V2 Payment Required response
  */
 export interface PaymentRequired {
   /** Protocol version */
@@ -72,10 +90,15 @@ export interface PaymentRequirements {
   /** Maximum timeout in seconds */
   maxTimeoutSeconds: number;
   
-  /** nanoMacaroon-specific data */
+  /** Mechanism-specific data (nanoMacaroon, nanoSession, nanoSignature) */
   extra: {
     /** Full nanoMacaroon challenge envelope */
-    challenge: Challenge;
+    challenge?: Challenge;
+    /** Track A: stateful session binding */
+    nanoSession?: NanoSessionExtra;
+    /** Track B: stateless signature binding */
+    nanoSignature?: NanoSignatureExtra;
+    [key: string]: unknown;
   };
 }
 
@@ -117,6 +140,33 @@ export interface PaymentAccessPayload {
 }
 
 /**
+ * x402 V2 payment payload — the shape used by facilitator handlers.
+ * Supports both legacy proof/signature and nanoMacaroon settlement shapes.
+ */
+export interface PaymentPayload {
+  /** Protocol version */
+  x402Version: 2;
+
+  /** Accepted requirements */
+  accepted: PaymentRequirements;
+
+  /** Payment proof data */
+  payload: {
+    /** Block hash or settlement proof identifier */
+    proof: string;
+    /** Optional NOMS signature for Track B */
+    signature?: string;
+    [key: string]: unknown;
+  };
+
+  /** Resource being accessed */
+  resource?: ResourceInfo;
+
+  /** Optional extensions */
+  extensions?: Record<string, unknown>;
+}
+
+/**
  * x402 V2 payment response
  */
 export interface PaymentResponse {
@@ -133,8 +183,6 @@ export interface PaymentResponse {
   error?: string;
 }
 
-export type PaymentPayload = PaymentSettlementPayload | PaymentAccessPayload;
-
 /**
  * HTTP header names for x402
  */
@@ -145,7 +193,7 @@ export const HEADERS = {
 } as const;
 
 /**
- * Scheme identifier for x402.NanoSession
+ * Scheme identifier for x402.Nano
  */
 export const SCHEME = 'exact' as const;
 

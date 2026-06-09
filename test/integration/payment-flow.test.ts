@@ -116,7 +116,8 @@ describe('Integration: Full Payment Flow', () => {
             continue;
           }
 
-          throw new Error(`RPC work_generate failed: ${message}`);
+          console.log(`   ⚠️  RPC work_generate failed (${message}) — falling back to local PoW`);
+          break;
         }
       }
     }

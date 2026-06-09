@@ -1,7 +1,7 @@
 /**
- * x402.NanoSession Core - Rev 8
+ * x402.Nano Core
  * 
- * Simplified single-track binding using nanoMacaroon mechanism.
+ * Unified type system supporting nanoMacaroon mechanism and legacy session/signature tracks.
  */
 
 // Types
@@ -18,6 +18,8 @@ export type {
   SettlementResult,
   AccessProof,
   MacaroonCredential,
+  NanoSessionExtra,
+  NanoSignatureExtra,
 } from './types.js';
 
 // Constants
@@ -31,7 +33,7 @@ export {
   HEADERS,
 } from './constants.js';
 
-// Builders
+// Builders (nanoMacaroon mechanism)
 export {
   buildPaymentRequired,
   buildPaymentSettlementPayload,
@@ -46,3 +48,26 @@ export {
   encodePaymentResponse,
   decodePaymentResponse,
 } from './builders.js';
+
+// Utilities
+export {
+  assertValidRawAmount,
+  assertValidPaymentRequirements,
+  calculateTaggedAmount,
+  deriveAddressFromSeed,
+} from './utils.js';
+
+// Backward-compatible wrappers (legacy API)
+export {
+  createPaymentRequirements,
+  createSignatureRequirements,
+  createPaymentPayload,
+  assertValidPaymentPayload,
+  createPaymentRequired,
+} from './compat.js';
+export type {
+  CreatePaymentRequirementsOpts,
+  CreateSignatureRequirementsOpts,
+  CreatePaymentPayloadOpts,
+  CreatePaymentRequiredOpts,
+} from './compat.js';

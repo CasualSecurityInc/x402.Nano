@@ -1,6 +1,6 @@
 # @nanosession/x402
 
-This package provides the official adapter between the [NanoSession](../../docs/x402_NanoSession_rev7_Protocol.md) protocol and the Coinbase [x402](https://github.com/coinbase/x402) ecosystem.
+This package provides the official adapter between the [NanoSession](../../docs/protocol.md) protocol and the Coinbase [x402](https://github.com/coinbase/x402) ecosystem.
 
 It implements the core `SchemeNetworkServer`, `SchemeNetworkFacilitator`, and `SchemeNetworkClient` interfaces required by `@x402/core` and `@x402/next`, allowing you to use Nano (XNO) seamlessly within standard x402 middlewares.
 
@@ -81,7 +81,7 @@ The adapter passes `extensions` through to the underlying NanoSession handlers w
 
 ## Documentation
 
-Full protocol specification and guides: <https://csi.ninzin.net/x402.NanoSession/>
+Full protocol specification and guides: <https://csi.ninzin.net/x402.Nano/>
 
 ## License
 

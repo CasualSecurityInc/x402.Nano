@@ -18,8 +18,8 @@ Both tracks are `scheme: "exact"` mechanisms using `network: "nano:mainnet"` per
 
 This document covers the shared protocol architecture, threat model, and security analysis. Wire format and verification details are in the track specs:
 
-- [Track A: nanoTxn](./x402_NanoSession_rev8_Track_A_nanoTxn.md)
-- [Track B: nanoSignature](./x402_NanoSession_rev8_Track_B_nanoSignature.md)
+- [Track A: nanoTxn](./extensions/track-a-nanotxn.md)
+- [Track B: nanoSignature](./extensions/track-b-nanosignature.md)
 
 ---
 
@@ -224,7 +224,7 @@ Assume:
 
 ## See Also
 
-- [Track A: nanoTxn](./x402_NanoSession_rev8_Track_A_nanoTxn.md)
-- [Track B: nanoSignature](./x402_NanoSession_rev8_Track_B_nanoSignature.md)
+- [Track A: nanoTxn](./extensions/track-a-nanotxn.md)
+- [Track B: nanoSignature](./extensions/track-b-nanosignature.md)
 - [ORIS-001: Nano Off-chain Message Signing (NOMS)](https://github.com/OpenRai/Standards/blob/main/rfcs/ORIS-001.md)
 - [x402 Standard](https://github.com/x402-foundation/x402)

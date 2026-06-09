@@ -41,7 +41,7 @@ TypeScript monorepo implementing the NanoSession protocol — a session-bound pa
 
 | Task | Location | Notes |
 |------|----------|-------|
-| **Protocol specs** | `docs/x402_NanoSession_rev6_Protocol.md` | Current active revision |
+| **Protocol specs** | `docs/protocol.md` | Current active revision |
 | **Core types** | `packages/core/src/index.ts` | Exports all public types |
 | **Server handler** | `packages/facilitator/src/handler.ts` | FacilitatorHandler implementation |
 | **Client handler** | `packages/client/src/handler.ts` | PaymentHandler implementation |
@@ -227,8 +227,8 @@ pnpm clean                # Remove dist folders
 
 # Docs + Demo
 pnpm dev:demo             # Docs + demo servers concurrently
-pnpm site:dev             # VitePress dev server (set SPEC_REV=rev6)
-pnpm site:build           # Build static site (set SPEC_REV=rev6)
+pnpm site:dev             # VitePress dev server
+pnpm site:build           # Build static site
 
 # Single package
 cd packages/core
@@ -276,7 +276,6 @@ NANO_RPC_URLS=https://primary.example.com?key=ABC,https://backup.example.com
 
 - **pnpm required**: Enforced via `packageManager` field
 - **ESM only**: Pure ESM project (no CommonJS)
-- **Rev6**: Current active protocol revision
 - **Session = Security**: Sessions are security primitives, not implementation details
 - **Feeless**: Nano has zero transaction fees
 - **Sub-second**: Nano confirms in <1 second

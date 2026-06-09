@@ -41,10 +41,10 @@ describe('PaymentRequired encoding/decoding', () => {
     expect(decoded).toEqual(mockRequired);
   });
 
-  test('decode throws if x402Version is not 2', () => {
+  test('decode returns null if x402Version is not 2', () => {
     const invalidObj = { ...mockRequired, x402Version: 1 };
     const encoded = Buffer.from(JSON.stringify(invalidObj)).toString('base64');
-    expect(() => decodePaymentRequired(encoded)).toThrow(/Unsupported x402 version: 1/);
+    expect(decodePaymentRequired(encoded)).toBeNull();
   });
 });
 

@@ -13,7 +13,7 @@ This repository contains the **x402-style HTTP binding** for the `nanoMacaroon` 
 - **Protocol-Bound**: Payment settlement is bound to an issued challenge and redeemed into a reusable capability
 - **Simple**: `PAYMENT-REQUIRED` -> pay -> `PAYMENT-SIGNATURE` retry -> `PAYMENT-RESPONSE`
 
-The active direction in this repository is **Rev 8**: a single-track x402 binding built on top of `nanoMacaroon`. Older `nanoSession` / `nanoSignature` material should be treated as legacy or archival context, not the current protocol direction.
+The active direction in this repository is a single-track x402 binding built on top of `nanoMacaroon`. Older `nanoSession` / `nanoSignature` material should be treated as legacy or archival context, not the current protocol direction.
 
 ## Repository Layout
 
@@ -29,7 +29,7 @@ x402.NanoSession/
 │   ├── standalone-facilitator/ # Reference standalone facilitator server
 │   ├── client/                 # Reference paying client
 │   └── faremeter-server/       # Express + Faremeter integration example
-├── docs/                       # Active protocol docs (Rev 8 source of truth)
+├── docs/                       # Active protocol docs (source of truth)
 ├── site/                       # VitePress docs + protected-resource demo server
 └── test/integration/           # E2E tests with real Nano mainnet transactions
 ```
@@ -54,14 +54,14 @@ Generate and preview the protocol specification website:
 
 ```bash
 cd site
-SPEC_REV=rev8 pnpm site:build    # Build static site from docs/
-pnpm site:preview                 # Preview at localhost:4173
+pnpm site:build    # Build static site from docs/
+pnpm site:preview  # Preview at localhost:4173
 ```
 
 For development with hot reload:
 ```bash
 cd site
-SPEC_REV=rev8 pnpm site:dev      # Dev server at localhost:5173
+pnpm site:dev      # Dev server at localhost:5173
 ```
 
 ### Protected Resource Demo
@@ -73,7 +73,7 @@ cd site
 pnpm dev:demo
 ```
 
-Then open the protected demo page and inspect the browser Network panel to see the rev8 flow:
+Then open the protected demo page and inspect the browser Network panel to see the flow:
 
 1. initial protected resource request returns `402` with `PAYMENT-REQUIRED`
 2. the demo server allocates a per-challenge destination from a bounded derived address pool when `NANO_TEST_SEED` is configured, otherwise it falls back to `NANO_SERVER_ADDRESS`
@@ -130,7 +130,7 @@ pnpm test:integration
 
 | Resource | Description |
 |----------|-------------|
-| **[Rev 8 Protocol Spec](./docs/x402_NanoSession_rev8_Protocol.md)** | Active x402 binding spec for `nanoMacaroon` |
+| **[Protocol Spec](./docs/protocol.md)** | Active x402 binding spec for `nanoMacaroon` |
 | **[Examples](./examples/)** | Working server and client with step-by-step instructions |
 | **[Integration Tests](./test/integration/)** | Real Nano transactions on mainnet |
 

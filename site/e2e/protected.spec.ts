@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('NanoSession Protected Demo Page', () => {
+test.describe('x402.Nano Protected Demo Page', () => {
 
     test('should display paywall and resolve after client-side polling and retry', async ({ page }) => {
         await page.goto('/protected');

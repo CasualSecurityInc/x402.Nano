@@ -302,6 +302,10 @@ export class NanoRpcClient {
         if (!silent) {
           log('%s failed for %s: %s', action, endpoint.baseUrl, err.message);
         }
+        // Propagate "Account not found" directly — it's a normal response, not a transient failure
+        if (action === 'account_info' && /account not found/i.test(err.message)) {
+          throw err;
+        }
         errors.push(err);
       }
     }
@@ -349,7 +353,13 @@ export class NanoRpcClient {
 
         if (data.error) {
           logCalls('<<< [%s] %s RPC Error: %s', action, endpoint.baseUrl, data.error);
-          throw new Error(`RPC error: ${data.error}`);
+          const errorMsg = String(data.error);
+          const err = new Error(`RPC error: ${errorMsg}`);
+          // Fast-fail on account-not-found — it's a normal response, not a transient failure
+          if (action === 'account_info' && /account not found/i.test(errorMsg)) {
+            throw err;
+          }
+          throw err;
         }
 
         logCalls('<<< [%s] %s %j', action, endpoint.baseUrl, data);
@@ -369,13 +379,14 @@ export class NanoRpcClient {
 
         const errorMsg = lastError.message;
         const isUnsupported = /unsupported|not supported|unknown action/i.test(errorMsg);
+        const isAccountNotFound = action === 'account_info' && /account not found/i.test(errorMsg);
 
         if (!(errorMsg.toLowerCase().startsWith('rpc error') || errorMsg.toLowerCase().startsWith('http '))) {
           logCalls('<<< [%s] %s Exception: %s', action, endpoint.baseUrl, errorMsg);
         }
 
-        if (isUnsupported) {
-          logCalls('<<< [%s] %s Fast-failing unsupported action', action, endpoint.baseUrl);
+        if (isUnsupported || isAccountNotFound) {
+          logCalls('<<< [%s] %s Fast-failing %s', action, endpoint.baseUrl, isAccountNotFound ? 'account not found' : 'unsupported action');
           break;
         }
 

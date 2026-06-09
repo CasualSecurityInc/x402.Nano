@@ -1,5 +1,5 @@
 /**
- * x402.NanoSession Rev 8 Adapter
+ * x402.Nano Adapter
  * 
  * x402 binding using nanoMacaroon mechanism.
  * Simplified single-track implementation.
@@ -12,7 +12,7 @@ import { buildPaymentRequired, encodePaymentRequired, decodePaymentPayload } fro
 export type { PaymentRequired, PaymentPayload, PaymentRequirements };
 
 /**
- * x402 Rev 8 Server Adapter
+ * x402 Server Adapter
  */
 export class X402Adapter {
   constructor(private facilitator: NanoMacaroonFacilitator) {}

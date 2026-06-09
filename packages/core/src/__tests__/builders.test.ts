@@ -4,7 +4,7 @@ import {
   createPaymentPayload,
   createPaymentRequired,
   assertValidPaymentPayload
-} from '../builders.js';
+} from '../compat.js';
 import type { PaymentRequirements } from '../types.js';
 
 const requirements: PaymentRequirements = {
@@ -50,7 +50,7 @@ describe('builders', () => {
         amount: '1001235',
         expiresAt: '2026-01-01T00:00:00.000Z'
       })
-    ).toThrow(/amount invariant/);
+    ).toThrow(/Amount invariant/);
   });
 
   test('createPaymentRequired builds canonical payload', () => {

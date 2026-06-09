@@ -1,5 +1,5 @@
 /**
- * x402.NanoSession Rev 8 Builders
+ * x402.Nano Builders
  * 
  * Build and parse x402 V2 payloads using nanoMacaroon mechanism.
  */
@@ -123,7 +123,7 @@ export function parsePaymentPayload(data: string | object): PaymentPayload | nul
       return null;
     }
     
-    if (!parsed.payload?.mode) {
+    if (!parsed.payload?.mode && !parsed.payload?.proof) {
       return null;
     }
     

@@ -41,7 +41,7 @@ const ext = declarePaymentIdentifierExtension({ required: true });
 
 ## Documentation
 
-[Full protocol specification and guides](https://csi.ninzin.net/x402.NanoSession/)
+[Full protocol specification and guides](https://csi.ninzin.net/x402.Nano/)
 
 ## License
 

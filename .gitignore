@@ -36,6 +36,13 @@ coverage/
 # Temporary
 *.tmp
 *.temp
+TEMP_*
+session-*.md
+temp-*
+tmp-*
+
+# pnpm store (local cache)
+.pnpm-store/
 
 # Generated site content (rebuilt from /docs at build time)
 site/gen/

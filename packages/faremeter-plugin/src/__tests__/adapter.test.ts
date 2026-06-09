@@ -315,3 +315,80 @@ describe('createPaymentHandler', () => {
     expect(execers).toHaveLength(1);
   });
 });
+
+describe('createFacilitatorHandler — Track B (nanoSignature)', () => {
+  let mockRpcClient: ReturnType<typeof createMockRpcClient>;
+
+  beforeEach(() => {
+    mockRpcClient = createMockRpcClient();
+  });
+
+  test('handleVerify returns invalid for nanoSignature requirements (gap: toNanoRequirements returns null)', async () => {
+    const handler = createFacilitatorHandler({
+      rpcClient: mockRpcClient as any,
+      payTo: 'nano_destination',
+    });
+
+    const requirements: x402PaymentRequirements = {
+      scheme: SCHEME,
+      network: NETWORK,
+      asset: ASSET,
+      maxAmountRequired: '1000000',
+      resource: '/api/test',
+      payTo: 'nano_destination',
+      maxTimeoutSeconds: 300,
+      extra: {
+        nanoSignature: {
+          url: 'https://api.example.com/data',
+        },
+      },
+    };
+
+    const payment: x402PaymentPayload = {
+      x402Version: 2,
+      scheme: SCHEME,
+      network: NETWORK,
+      payload: { proof: 'BLOCK_HASH' },
+    };
+
+    // toNanoRequirements returns null for nanoSignature, so handleVerify returns invalid
+    const result = await handler.handleVerify!(requirements, payment);
+    expect(result).not.toBeNull();
+    expect(result!.isValid).toBe(false);
+    expect(result!.invalidReason).toMatch(/invalid requirements/i);
+  });
+
+  test('handleSettle returns error for nanoSignature requirements', async () => {
+    const handler = createFacilitatorHandler({
+      rpcClient: mockRpcClient as any,
+      payTo: 'nano_destination',
+    });
+
+    const requirements: x402PaymentRequirements = {
+      scheme: SCHEME,
+      network: NETWORK,
+      asset: ASSET,
+      maxAmountRequired: '1000000',
+      resource: '/api/test',
+      payTo: 'nano_destination',
+      maxTimeoutSeconds: 300,
+      extra: {
+        nanoSignature: {
+          url: 'https://api.example.com/data',
+        },
+      },
+    };
+
+    const payment: x402PaymentPayload = {
+      x402Version: 2,
+      scheme: SCHEME,
+      network: NETWORK,
+      payload: { proof: 'BLOCK_HASH' },
+    };
+
+    const result = await handler.handleSettle(requirements, payment);
+    expect(result).not.toBeNull();
+    expect(result!.success).toBe(false);
+    expect(result!.error).toMatch(/invalid requirements/i);
+  });
+});

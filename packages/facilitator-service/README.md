@@ -40,7 +40,7 @@ npx @nanosession/facilitator-service
 
 ## Documentation
 
-[https://csi.ninzin.net/x402.NanoSession/](https://csi.ninzin.net/x402.NanoSession/)
+[https://csi.ninzin.net/x402.Nano/](https://csi.ninzin.net/x402.Nano/)
 
 ## License
 
