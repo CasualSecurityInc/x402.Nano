@@ -21,6 +21,7 @@
     "@types/node": "^20.0.0",
     "dotenv": "^17.2.4",
     "nanocurrency": "^2.5.0",
+    "nano-rspow-node": "^0.10.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0",
     "vite-tsconfig-paths": "^6.1.0",

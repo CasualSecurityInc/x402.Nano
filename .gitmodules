@@ -29,3 +29,7 @@
 [submodule "docs/references/schemes"]
 	path = docs/references/schemes
 	url = https://github.com/x402nano/schemes.git
+[submodule "docs/references/x402-foundation"]
+	path = docs/references/x402-foundation
+	url = https://github.com/x402-foundation/x402.git
+	branch = main

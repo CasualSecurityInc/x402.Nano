@@ -17,8 +17,6 @@ export interface FacilitatorOptions {
   spentSet?: SpentSetStorage;
   defaultResourceAmountRaw?: string;
   maxTimeoutSeconds?: number;
-  tagModulus?: number;
-  tagMultiplier?: string | bigint;
 }
 
 /**
@@ -32,8 +30,6 @@ export function createFacilitatorHandler(options: FacilitatorOptions): Facilitat
   const underlying = new NanoSessionFacilitatorHandler({
     rpcClient: options.rpcClient,
     spentSet: options.spentSet,
-    tagModulus: options.tagModulus,
-    tagMultiplier: options.tagMultiplier,
   });
 
   const getSupported = (): Promise<x402SupportedKind>[] => {

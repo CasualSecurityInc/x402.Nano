@@ -138,3 +138,15 @@ const demoSource = path.join(__dirname, '../protected.md');
 if (fs.existsSync(demoSource)) {
   fs.copyFileSync(demoSource, path.join(TARGET_DIR, 'protected.md'));
 }
+
+// Copy the new Rev 8 dedicated track demo pages (they live alongside protected.md)
+const trackDemoSources = [
+  path.join(__dirname, '../demo-track-a.md'),
+  path.join(__dirname, '../demo-track-b.md'),
+];
+trackDemoSources.forEach(src => {
+  const base = path.basename(src);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, path.join(TARGET_DIR, base));
+  }
+});

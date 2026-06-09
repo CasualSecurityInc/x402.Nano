@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import QRCode from 'qrcode'
-import { useXnapSnap } from '../composables/useXnapSnap'
 
 const props = defineProps({
   demoServerUrl: {
     type: String,
     default: () => import.meta.env.VITE_MAINNET_DEMO_URL || 'http://localhost:3001'
-  },
-  demoTestnetServerUrl: {
-    type: String,
-    default: () => import.meta.env.VITE_TESTNET_DEMO_URL || 'http://localhost:3002'
   }
 })
 
@@ -21,10 +16,9 @@ interface LogEntry {
   content: string
 }
 
-const enableTestnetTab = import.meta.env.VITE_ENABLE_TESTNET_TAB !== 'false'
-const enableXnap = import.meta.env.VITE_ENABLE_XNAP !== 'false'
+const NETWORK = 'nano:mainnet'
+const ASSET = 'XNO'
 
-const networkMode = ref<'mainnet' | 'testnet'>('mainnet')
 const activeServerUrl = ref(props.demoServerUrl)
 const isLoading = ref(true)
 const fetchError = ref<string | null>(null)
@@ -49,25 +43,17 @@ const session = ref<null | {
 let countdownTimer: number | null = null
 let pollingTimer: number | null = null
 
-const activePaymentTab = ref<'qr' | 'metamask'>('qr')
-const { isMetaMaskInstalled, isXnapInstalled, isPending: xnapPending, error: xnapError, installXnap, payWithXnap, reset: xnapReset } = useXnapSnap()
-
 const paymentUri = computed(() => {
   if (!session.value) return ''
   return `nano:${session.value.payTo}?amount=${session.value.amountRaw}`
 })
 
 onMounted(async () => {
-  if (typeof window !== 'undefined' && window.location.hash === '#testnet') {
-    networkMode.value = 'testnet'
-    activeServerUrl.value = props.demoTestnetServerUrl
-  }
   await fetchPaymentRequirements()
 })
 
 async function fetchPaymentRequirements() {
   cleanupTimers()
-  xnapReset()
   paymentStatus.value = 'pending'
   finalBlockHash.value = null
   paymentResponse.value = null
@@ -156,14 +142,14 @@ function formatRawAmount(raw: string) {
 
 async function startPolling() {
   if (!session.value || !payerAccount.value) {
-    pollError.value = 'Enter the payer account to start polling.'
+    pollError.value = 'Enter your nano_ address to start polling.'
     return
   }
 
   pollError.value = null
   paymentStatus.value = 'polling'
   isPolling.value = true
-  httpLog.value.push({ type: 'info', content: `(Polling for matching send from ${payerAccount.value})` })
+  httpLog.value.push({ type: 'info', content: `(Polling for matching send from ${payerAccount.value} to ${session.value.payTo})` })
 
   const tick = async () => {
     if (!session.value) return
@@ -209,8 +195,8 @@ async function verifyPayment(sendHash: string) {
     x402Version: 2,
     accepted: {
       scheme: 'exact',
-      network: session.value.challenge.network,
-      asset: session.value.challenge.asset,
+      network: NETWORK,
+      asset: ASSET,
       amount: session.value.amountRaw,
       payTo: session.value.payTo,
       maxTimeoutSeconds: Math.max(countdown.value, 1),
@@ -219,16 +205,9 @@ async function verifyPayment(sendHash: string) {
       },
     },
     payload: {
-      version: 'nm1',
-      mechanism: 'nanoMacaroon',
-      mode: 'settle',
-      challengeId: session.value.challenge.id,
-      challenge: btoa(JSON.stringify(session.value.challenge)),
-      payerAccount: payerAccount.value,
+      challengeId: session.value.challenge.challengeId,
       sendHash,
-      proofOptions: {
-        blockIncluded: false,
-      },
+      payerAccount: payerAccount.value,
     },
   }
 
@@ -268,41 +247,10 @@ async function verifyPayment(sendHash: string) {
     isPolling.value = false
   }
 }
-
-async function handleXnapClick() {
-  if (!isXnapInstalled.value) {
-    await installXnap()
-    return
-  }
-
-  if (!session.value) return
-
-  const result = await payWithXnap(session.value.payTo, session.value.amountRaw)
-  if (result?.hash) {
-    await verifyPayment(result.hash)
-  }
-}
-
-async function setNetworkMode(mode: 'mainnet' | 'testnet') {
-  if (networkMode.value === mode) return
-  networkMode.value = mode
-  activeServerUrl.value = mode === 'testnet' ? props.demoTestnetServerUrl : props.demoServerUrl
-  await fetchPaymentRequirements()
-}
 </script>
 
 <template>
   <div class="nano-paywall">
-    <div id="mainnet" class="network-anchor"></div>
-    <div id="testnet" class="network-anchor"></div>
-
-    <div class="network-tabs-wrapper" id="network-tabs" v-if="enableTestnetTab">
-      <div class="network-tabs-container">
-        <button @click="setNetworkMode('mainnet')" :class="['network-tab', networkMode === 'mainnet' ? 'active' : '']">Mainnet</button>
-        <button @click="setNetworkMode('testnet')" :class="['network-tab', networkMode === 'testnet' ? 'active' : '']">Testnet</button>
-      </div>
-    </div>
-
     <div v-if="paymentStatus === 'confirmed'" class="success-container">
       <div class="success-banner"><h2>Payment successful!</h2></div>
       <div data-testid="protected-content">
@@ -315,7 +263,7 @@ async function setNetworkMode(mode: 'mainnet' | 'testnet') {
     <div v-else class="paywall-container" data-testid="payment-required">
       <div class="paywall-header">
         <h3>Payment Required</h3>
-        <p>Protected content is unlocked only after the browser retries the same resource with a nanoMacaroon settlement proof.</p>
+        <p>Send the exact amount to the destination address below using any Nano wallet, then retry with the confirmed send hash.</p>
       </div>
 
       <div v-if="isLoading" class="loading-state">
@@ -335,47 +283,28 @@ async function setNetworkMode(mode: 'mainnet' | 'testnet') {
 
       <div v-else-if="paymentStatus === 'expired'" class="expired-state">
         <p>Challenge expired. Start a new payment attempt.</p>
+        <button @click="fetchPaymentRequirements" class="retry-btn">New challenge</button>
       </div>
 
       <div v-else-if="session" class="payment-active">
         <div class="common-info">
           <p class="payment-amount">
-            Please pay exactly <strong data-testid="payment-amount-raw" :data-raw="session.amountRaw">{{ formatRawAmount(session.amountRaw) }} XNO</strong> to:
+            Send exactly <strong data-testid="payment-amount-raw" :data-raw="session.amountRaw">{{ formatRawAmount(session.amountRaw) }} XNO</strong> to:
           </p>
           <div class="address-pane" data-testid="payment-address">{{ session.payTo }}</div>
           <div class="session-timer">Challenge expires in: <span class="mono">{{ Math.floor(countdown / 60) }}:{{ (countdown % 60).toString().padStart(2, '0') }}</span></div>
         </div>
 
-        <div class="payment-tabs">
-          <div class="tab-headers">
-            <button @click="activePaymentTab = 'qr'" :class="['tab-btn', activePaymentTab === 'qr' ? 'active-tab' : '']">QR Code</button>
-            <button v-if="isMetaMaskInstalled" @click="activePaymentTab = 'metamask'" :class="['tab-btn', activePaymentTab === 'metamask' ? 'active-tab' : '']">MetaMask</button>
-          </div>
-
-          <div v-if="activePaymentTab === 'qr'" class="tab-content">
-            <div class="qr-section">
-              <div class="qr-wrapper"><img v-if="qrcodeDataUrl" :src="qrcodeDataUrl" alt="Nano Payment QR Code" /></div>
-              <a v-if="paymentUri" :href="paymentUri" class="wallet-link">Open in wallet app</a>
-              <p class="qr-hint">After paying, enter the payer account below so the browser can use the demo-only `/api/poll-for-demo` helper to look for a matching send.</p>
-              <p class="qr-hint">In a real client, the wallet or payment agent would normally return the send hash directly after publishing the send block.</p>
-              <input v-model="payerAccount" class="payer-input" data-testid="payer-account-input" placeholder="nano_... payer account" />
-              <button class="retry-btn" data-testid="start-polling" :disabled="isPolling" @click="startPolling">
-                {{ isPolling ? 'Polling...' : 'Poll for matching send' }}
-              </button>
-              <p v-if="pollError" class="poll-error">{{ pollError }}</p>
-            </div>
-          </div>
-
-          <div v-if="activePaymentTab === 'metamask'" class="tab-content">
-            <div class="metamask-section">
-              <button @click="handleXnapClick" class="xnap-btn" :disabled="!enableXnap || xnapPending">
-                <span v-if="!isXnapInstalled">Install Xnap Snap</span>
-                <span v-else-if="xnapPending">Processing...</span>
-                <span v-else>Pay with MetaMask</span>
-              </button>
-              <div v-if="xnapError" class="xnap-error">{{ xnapError }}</div>
-            </div>
-          </div>
+        <div class="qr-section">
+          <div class="qr-wrapper"><img v-if="qrcodeDataUrl" :src="qrcodeDataUrl" alt="Nano Payment QR Code" /></div>
+          <a v-if="paymentUri" :href="paymentUri" class="wallet-link">Open in wallet app</a>
+          <p class="qr-hint">After paying from your wallet, enter your <code>nano_...</code> address below and click poll. The browser will look for the matching send on-chain, then retry the protected resource request with the confirmed hash.</p>
+          <p class="qr-hint">In a production client, the wallet would return the send hash directly — the polling step is a demo-only helper for external wallet payments.</p>
+          <input v-model="payerAccount" class="payer-input" data-testid="payer-account-input" placeholder="nano_... your wallet address" />
+          <button class="retry-btn" data-testid="start-polling" :disabled="isPolling" @click="startPolling">
+            {{ isPolling ? 'Polling...' : 'Poll for matching send' }}
+          </button>
+          <p v-if="pollError" class="poll-error">{{ pollError }}</p>
         </div>
 
         <div class="global-status">
@@ -412,11 +341,6 @@ async function setNetworkMode(mode: 'mainnet' | 'testnet') {
 
 <style scoped>
 .nano-paywall { padding-top: 1rem; padding-bottom: 2rem; }
-.network-anchor { position: relative; top: -80px; visibility: hidden; height: 0; }
-.network-tabs-wrapper { display: flex; justify-content: center; margin-bottom: 24px; }
-.network-tabs-container { background-color: var(--vp-c-bg-alt); padding: 4px; display: flex; border-radius: 8px; border: 1px solid var(--vp-c-divider); }
-.network-tab { padding: 6px 16px; font-size: 14px; font-weight: 500; border-radius: 6px; color: var(--vp-c-text-2); cursor: pointer; background: transparent; border: none; }
-.network-tab.active { background-color: var(--vp-c-brand); color: #fff; }
 .success-container, .paywall-container, .protocol-terminal { max-width: 40rem; margin: 0 auto 24px; border-radius: 12px; }
 .success-container { background-color: rgba(34, 197, 94, 0.1); padding: 16px; border: 1px solid rgba(34, 197, 94, 0.3); }
 .paywall-container { border: 1px solid var(--vp-c-divider); overflow: hidden; background-color: var(--vp-c-bg-soft); }
@@ -428,19 +352,14 @@ async function setNetworkMode(mode: 'mainnet' | 'testnet') {
 .payment-amount { text-align: center; font-size: 0.875rem; margin-bottom: 16px; }
 .address-pane { width: 100%; background-color: var(--vp-c-bg-alt); font-size: 0.75rem; font-family: monospace; padding: 12px; border-radius: 6px; text-align: center; word-break: break-all; margin-bottom: 16px; }
 .session-timer { text-align: center; font-size: 0.875rem; color: var(--vp-c-text-3); }
-.payment-tabs { border-top: 1px solid var(--vp-c-divider); }
-.tab-headers { display: flex; border-bottom: 1px solid var(--vp-c-divider); }
-.tab-btn { flex: 1; padding: 12px; background: transparent; border: none; cursor: pointer; }
-.active-tab { color: var(--vp-c-brand); }
-.tab-content { padding: 24px; }
-.qr-section, .metamask-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.qr-section { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px; }
 .qr-wrapper { background: white; padding: 8px; border-radius: 8px; }
 .qr-wrapper img { width: 192px; height: 192px; display: block; }
 .wallet-link { font-size: 0.85rem; color: var(--vp-c-brand); text-decoration: none; }
-.qr-hint, .poll-error, .xnap-error { font-size: 0.8rem; text-align: center; }
+.qr-hint, .poll-error { font-size: 0.8rem; text-align: center; }
 .payer-input { width: 100%; max-width: 28rem; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--vp-c-divider); }
 .retry-btn, .xnap-btn, .restart-link { padding: 10px 20px; font-size: 14px; font-weight: 500; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.retry-btn:disabled, .xnap-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.retry-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .global-status { padding: 16px; background-color: var(--vp-c-bg-alt); border-top: 1px solid var(--vp-c-divider); text-align: center; }
 .waiting-status { color: var(--vp-c-brand); font-weight: 500; }
 .expired-status { color: #ef4444; }

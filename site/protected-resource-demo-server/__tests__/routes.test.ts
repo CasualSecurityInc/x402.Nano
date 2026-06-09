@@ -2,10 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 
 import { testApp } from './app';
-import { decodePaymentRequired, decodePaymentPayload, decodePaymentResponse } from '@nanosession/core';
-import { NanoMacaroonFacilitator } from '@nanomacaroon/facilitator';
+import { __setProtectedMockRpcForTests, resetSpentHashesForTests } from '../routes/protected';
 import { __setPollRpcClientForTests } from '../routes/poll';
-import { __setProtectedFacilitatorForTests } from '../routes/protected';
 import { getNextDemoDestination, resetDemoDestinationPoolForTests } from '../destination-pool';
 
 const SEND_HASH = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
@@ -13,7 +11,10 @@ const PAYER_ACCOUNT = 'nano_1111111111111111111111111111111111111111111111111111
 
 process.env.NANO_RPC_URL = 'http://localhost:7076';
 process.env.NANO_SERVER_ADDRESS = 'nano_3arg3asgtigae3xckabaaewkx3bzsh7nwz7jkmjos79ihyaxwphhm6qgjps4';
-process.env.MACAROON_ROOT_KEY = 'demo-test-root-key';
+
+function decodeBase64Json(b64: string): any {
+  return JSON.parse(Buffer.from(b64, 'base64url').toString('utf-8'));
+}
 
 describe('Protected demo routes', () => {
   beforeEach(() => {
@@ -23,6 +24,7 @@ describe('Protected demo routes', () => {
     delete process.env.NANO_DEMO_ADDRESS_POOL_SIZE;
     delete process.env.NANO_DEMO_ADDRESS_START_INDEX;
     resetDemoDestinationPoolForTests();
+    resetSpentHashesForTests();
     __setPollRpcClientForTests({
       async getAccountHistory() {
         return [
@@ -49,28 +51,7 @@ describe('Protected demo routes', () => {
       },
     } as any);
 
-    __setProtectedFacilitatorForTests(new NanoMacaroonFacilitator({
-      rootKey: process.env.MACAROON_ROOT_KEY!,
-      location: 'protected-demo-test',
-      rpcClient: {
-        async getBlockInfo(hash: string) {
-          if (hash !== SEND_HASH) return null;
-          return {
-            hash,
-            block_account: PAYER_ACCOUNT,
-            amount: '10000000000000000000000000000',
-            destination: process.env.NANO_SERVER_ADDRESS,
-            confirmed: true,
-          };
-        },
-        async getAccountInfo() {
-          return {
-            frontier: SEND_HASH,
-            open_block: SEND_HASH,
-          };
-        },
-      },
-    }));
+    __setProtectedMockRpcForTests(null);
   });
 
   it('returns PAYMENT-REQUIRED on the first request', async () => {
@@ -79,11 +60,17 @@ describe('Protected demo routes', () => {
     expect(response.status).toBe(402);
     expect(response.headers['payment-required']).toBeDefined();
 
-    const paymentRequired = decodePaymentRequired(response.headers['payment-required']);
+    const paymentRequired = decodeBase64Json(response.headers['payment-required']);
     expect(paymentRequired).not.toBeNull();
-    expect(paymentRequired!.accepts[0].extra.challenge.mechanism).toBe('nanoMacaroon');
-    expect(paymentRequired!.accepts[0].extra.challenge.mode).toBe('settle');
-    expect(paymentRequired!.accepts[0].payTo).toBe(process.env.NANO_SERVER_ADDRESS);
+    expect(paymentRequired.accepts[0].scheme).toBe('exact');
+    expect(paymentRequired.accepts[0].network).toBe('nano:mainnet');
+    expect(paymentRequired.accepts[0].payTo).toBe(process.env.NANO_SERVER_ADDRESS);
+
+    const challenge = paymentRequired.accepts[0].extra.challenge;
+    expect(challenge.mechanism).toBe('nano-nym-exact');
+    expect(challenge.version).toBe('ns8');
+    expect(challenge.payToKind).toBe('address');
+    expect(challenge.settlementPolicy).toBe('send_confirmed');
   });
 
   it('allocates unique payTo addresses from a bounded derived pool when NANO_TEST_SEED is configured', async () => {
@@ -99,33 +86,37 @@ describe('Protected demo routes', () => {
     const responseA = await request(testApp).get('/api/protected');
     const responseB = await request(testApp).get('/api/protected');
 
-    const paymentRequiredA = decodePaymentRequired(responseA.headers['payment-required']);
-    const paymentRequiredB = decodePaymentRequired(responseB.headers['payment-required']);
+    const paymentRequiredA = decodeBase64Json(responseA.headers['payment-required']);
+    const paymentRequiredB = decodeBase64Json(responseB.headers['payment-required']);
 
-    expect(paymentRequiredA!.accepts[0].payTo).toBe(expectedA);
-    expect(paymentRequiredB!.accepts[0].payTo).toBe(expectedB);
-    expect(paymentRequiredA!.accepts[0].payTo).not.toBe(paymentRequiredB!.accepts[0].payTo);
+    expect(paymentRequiredA.accepts[0].payTo).toBe(expectedA);
+    expect(paymentRequiredB.accepts[0].payTo).toBe(expectedB);
+    expect(paymentRequiredA.accepts[0].payTo).not.toBe(paymentRequiredB.accepts[0].payTo);
   });
 
-  it('returns PAYMENT-RESPONSE on successful settlement proof retry', async () => {
+  it('returns 200 on successful settlement proof retry', async () => {
     const challengeResponse = await request(testApp).get('/api/protected');
-    const paymentRequired = decodePaymentRequired(challengeResponse.headers['payment-required']);
-    const requirements = paymentRequired!.accepts[0];
+    const paymentRequired = decodeBase64Json(challengeResponse.headers['payment-required']);
+    const challenge = paymentRequired.accepts[0].extra.challenge;
+
+    __setProtectedMockRpcForTests((hash: string) => {
+      if (hash !== SEND_HASH) return null;
+      return {
+        hash,
+        block_account: PAYER_ACCOUNT,
+        amount: challenge.amount,
+        confirmed: true,
+        link_as_account: process.env.NANO_SERVER_ADDRESS,
+      };
+    });
 
     const signaturePayload = {
-      x402Version: 2 as const,
-      accepted: requirements,
+      x402Version: 2,
+      accepted: paymentRequired.accepts[0],
       payload: {
-        version: 'nm1' as const,
-        mechanism: 'nanoMacaroon' as const,
-        mode: 'settle' as const,
-        challengeId: requirements.extra.challenge.id,
-        challenge: Buffer.from(JSON.stringify(requirements.extra.challenge)).toString('base64url'),
-        payerAccount: PAYER_ACCOUNT,
+        challengeId: challenge.challengeId,
         sendHash: SEND_HASH,
-        proofOptions: {
-          blockIncluded: false,
-        },
+        payerAccount: PAYER_ACCOUNT,
       },
     };
 
@@ -138,14 +129,68 @@ describe('Protected demo routes', () => {
     expect(response.body.success).toBe(true);
     expect(response.headers['payment-response']).toBeDefined();
 
-    const paymentResponse = decodePaymentResponse(response.headers['payment-response']);
-    expect(paymentResponse).not.toBeNull();
-    expect(paymentResponse!.result.acceptedPayment.sendHash).toBe(SEND_HASH);
-    expect(paymentResponse!.result.acceptedPayment.payerAccount).toBe(PAYER_ACCOUNT);
+    const paymentResponse = decodeBase64Json(response.headers['payment-response']);
+    expect(paymentResponse.result.mode).toBe('settled');
+    expect(paymentResponse.result.version).toBe('ns8');
+    expect(paymentResponse.result.mechanism).toBe('nano-nym-exact');
+  });
 
-    const decodedSignature = decodePaymentPayload(encodedSignature);
-    expect(decodedSignature).not.toBeNull();
-    expect(decodedSignature!.payload.mode).toBe('settle');
+  it('rejects duplicate challenge replay and rejects replayed block hash', async () => {
+    const challengeResponse = await request(testApp).get('/api/protected');
+    const paymentRequired = decodeBase64Json(challengeResponse.headers['payment-required']);
+    const challenge = paymentRequired.accepts[0].extra.challenge;
+
+    __setProtectedMockRpcForTests((hash: string) => {
+      if (hash !== SEND_HASH) return null;
+      return {
+        hash,
+        block_account: PAYER_ACCOUNT,
+        amount: challenge.amount,
+        confirmed: true,
+        link_as_account: process.env.NANO_SERVER_ADDRESS,
+      };
+    });
+
+    // First retry: succeeds
+    const sig1 = Buffer.from(JSON.stringify({
+      x402Version: 2,
+      accepted: paymentRequired.accepts[0],
+      payload: { challengeId: challenge.challengeId, sendHash: SEND_HASH, payerAccount: PAYER_ACCOUNT },
+    })).toString('base64url');
+
+    const first = await request(testApp).get('/api/protected').set('PAYMENT-SIGNATURE', sig1);
+    expect(first.status).toBe(200);
+
+    // Second retry with same challengeId: challenge now deleted
+    const second = await request(testApp).get('/api/protected').set('PAYMENT-SIGNATURE', sig1);
+    expect(second.status).toBe(402);
+    expect(second.body.error).toMatch(/Challenge not found/);
+
+    // Fresh challenge, same send hash: spent-hash check should reject
+    const challengeResponse2 = await request(testApp).get('/api/protected');
+    const paymentRequired2 = decodeBase64Json(challengeResponse2.headers['payment-required']);
+    const challenge2 = paymentRequired2.accepts[0].extra.challenge;
+
+    __setProtectedMockRpcForTests((hash: string) => {
+      if (hash !== SEND_HASH) return null;
+      return {
+        hash,
+        block_account: PAYER_ACCOUNT,
+        amount: challenge2.amount,
+        confirmed: true,
+        link_as_account: process.env.NANO_SERVER_ADDRESS,
+      };
+    });
+
+    const sig2 = Buffer.from(JSON.stringify({
+      x402Version: 2,
+      accepted: paymentRequired2.accepts[0],
+      payload: { challengeId: challenge2.challengeId, sendHash: SEND_HASH, payerAccount: PAYER_ACCOUNT },
+    })).toString('base64url');
+
+    const third = await request(testApp).get('/api/protected').set('PAYMENT-SIGNATURE', sig2);
+    expect(third.status).toBe(402);
+    expect(third.body.error).toMatch(/already spent/);
   });
 
   it('finds a matching send via the demo polling endpoint', async () => {

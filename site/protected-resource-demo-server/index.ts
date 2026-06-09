@@ -11,6 +11,7 @@ const envPath = process.env.DOTENV_CONFIG_PATH
 config({ path: envPath });
 import { protectedRoute } from './routes/protected';
 import { pollRoute } from './routes/poll';
+import { createDemoTracksRouter } from './routes/demo-tracks';
 
 // Load environment variables strictly
 const NANO_RPC_URL = process.env.NANO_RPC_URL;
@@ -40,6 +41,10 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/protected', protectedRoute);
 app.use('/api/poll-for-demo', pollRoute);
 
+// New Rev 8 per-track demo checkout routes (separate pages for Track A and Track B,
+// stable per-invoice deposits, proper Rev 8 shapes).
+app.use('/api/demo', createDemoTracksRouter());
+
 // Parse binding PORT from the Unified Server URL (12-factor standard)
 const serverUrlCandidate = process.env.VITE_TEST_AND_DEMO_SERVER_URL || 'http://localhost:3001';
 let PORT: number = 3001;
@@ -56,10 +61,11 @@ try {
 
 server.listen(PORT, HOST, () => {
   console.log(`Demo X402 Facilitator Server running on ${HOST}:${PORT}`);
+  console.log('Rev 8 demo tracks available at /api/demo/track-a and /api/demo/track-b (per-invoice deposits + stable sessions)');
   if (NANO_TEST_SEED) {
-    console.log('Accepting payments for bounded derived demo address pool');
+    console.log('Using NANO_TEST_SEED for per-invoice deposit derivation');
   } else {
-    console.log(`Accepting payments for address: ${NANO_SERVER_ADDRESS}`);
+    console.log(`Falling back to fixed address: ${NANO_SERVER_ADDRESS}`);
   }
 
     // Event loop lag monitor — detect if something is blocking the event loop

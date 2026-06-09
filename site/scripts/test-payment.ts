@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { deriveAddressFromSeed } from '@nanosession/client';
-import { deriveSecretKey, createBlock, signBlock, computeWork, validateWork, type BlockData } from 'nanocurrency';
+import { deriveSecretKey, createBlock, signBlock, type BlockData } from 'nanocurrency';
+import { generateWork as generateWorkRsp, WorkType } from 'nano-rspow-node';
 import { NanoRpcClient } from '@nanosession/rpc';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || '../.env' });
@@ -16,19 +17,6 @@ if (!seed || !toAddress || !amountRaw) {
 }
 
 const rpcClient = new NanoRpcClient({ endpoints: [rpcUrlStr] });
-
-async function getWorkThreshold() {
-    try {
-        const response = await fetch(rpcUrlStr, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'telemetry' })
-        });
-        const data = await response.json();
-        return data.active_difficulty || 'fffffff800000000';
-    } catch {
-        return 'fffffff800000000';
-    }
-}
 
 async function run() {
     console.log(`📡 Connecting to RPC: ${rpcUrlStr}`);
@@ -52,9 +40,8 @@ async function run() {
         process.exit(1);
     }
 
-    console.log(`⚙️  Generating PoW for frontier ${accountInfo.frontier}...`);
-    const threshold = await getWorkThreshold();
-    const work = await computeWork(accountInfo.frontier, { workThreshold: threshold });
+    console.log(`⚙️  Generating PoW for frontier ${accountInfo.frontier}... (via nano-rspow-node exclusively)`);
+    const work = await generateWorkRsp(accountInfo.frontier, WorkType.Send);
 
     if (!work) {
         console.error('❌ Work generation failed');

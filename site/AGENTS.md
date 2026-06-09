@@ -34,7 +34,7 @@ This directory contains the VitePress project for the x402.NanoSession documenta
 We do **not** edit markdown files in `site/gen/docs/` directly. Instead, we generate them from `../docs/` at build time.
 
 **The Script Logic:**
-1.  Reads `SPEC_REV` env var (set this to `rev6`).
+1.  Reads `SPEC_REV` env var (set this to `rev8`).
 2.  **Cleans**: Deletes `site/gen/docs/`.
 3.  **Copies & Renames**:
     *   `../docs/..._Protocol.md` -> `site/gen/docs/index.md`
@@ -99,7 +99,7 @@ pnpm dev:demo
 |---------|---------|
 | `pnpm dev:demo` | All: site watcher + VitePress (5173) + demo server (3001) |
 | `pnpm site:dev` | Site only: source watcher + VitePress (5173) |
-| `pnpm site:build` | Build static site (set `SPEC_REV=rev6`) |
+| `pnpm site:build` | Build static site (set `SPEC_REV=rev8`) |
 | `pnpm demo:mainnet` | Demo server only: mainnet (3001) |
 
 **Note:** `site:dev` watches `../docs/*.md` and `protected.md` for changes and rebuilds automatically.

@@ -1,7 +1,6 @@
 import { deriveSecretKey, derivePublicKey, hashBlock, signBlock as nanoSignBlock } from 'nanocurrency';
 import { deriveAddressFromSeed } from '@nanosession/core';
-import blakejs from 'blakejs';
-const { blake2bHex } = blakejs;
+import { NOMS } from '@openrai/nano-core';
 
 export interface KeyPair {
   publicKey: Uint8Array;
@@ -10,14 +9,13 @@ export interface KeyPair {
 
 /**
  * Derive a keypair from a Nano seed and account index.
- * Uses Nano's seed+index model: secretKey = blake2b(seed || index)
+ * Uses Nano's seed+index model.
  *
  * @param seed - 64-character hex seed
  * @param index - Account index (0 = first account, 1 = second, etc.)
  * @returns KeyPair with publicKey and secretKey as Uint8Arrays
  */
 export function deriveKeyPair(seed: string, index: number = 0): KeyPair {
-  // Use nanocurrency for proper HD derivation
   const secretKeyHex = deriveSecretKey(seed, index);
   const publicKeyHex = derivePublicKey(secretKeyHex);
 
@@ -57,7 +55,6 @@ export interface SignedBlock extends SendBlockParams {
 
 /**
  * Creates a Send block object from parameters.
- * Note: Currently a passthrough in this implementation.
  */
 export function createSendBlock(params: SendBlockParams): SendBlockParams {
   return params;
@@ -65,9 +62,7 @@ export function createSendBlock(params: SendBlockParams): SendBlockParams {
 
 /**
  * Signs a Nano block using the provided secret key.
- * @param block The block parameters to sign
- * @param secretKey The 64-byte secret key
- * @returns The hex-encoded signature
+ * Uses the canonical Nano block hashing + Ed25519.
  */
 export function signBlock(block: SendBlockParams, secretKey: Uint8Array): string {
   const blockHash = hashBlock({
@@ -84,19 +79,24 @@ export function signBlock(block: SendBlockParams, secretKey: Uint8Array): string
 }
 
 /**
- * Signs an arbitrary string message according to the NanoSession Rev 7 standard.
- * The message is hashed using 32-byte Blake2b, and then signed using Nano's Ed25519.
- * 
- * @param message The string (e.g., "block_hash+url") to sign
- * @param secretKeyHex The 64-character hex secret key
- * @returns The hex-encoded signature
+ * Signs an off-chain message using canonical NOMS (ORIS-001) from @openrai/nano-core.
+ *
+ * This is the correct implementation for Rev 8 Track B (nanoSignature).
+ * The message (e.g. "<blockHash>:<nonce>:<validBefore>") is wrapped with the
+ * NOMS payload format before hashing and signing.
+ *
+ * @param message The UTF-8 string message to sign.
+ * @param secretKeyHex The 64-character hex secret key (32 bytes).
+ * @returns The 128-character hex signature.
  */
 export function signMessage(message: string, secretKeyHex: string): string {
-  const hash = blake2bHex(message, undefined, 32);
-  // NOTE: nanocurrency.signBlock is a generic Ed25519 sign wrapper.
-  // It accepts any 32-byte hex hash, not just Nano block hashes.
-  return nanoSignBlock({
-    hash,
-    secretKey: secretKeyHex
-  });
+  return NOMS.signMessage(message, secretKeyHex);
+}
+
+/**
+ * Verifies a NOMS signature using the canonical implementation.
+ * Useful for tests and client-side validation.
+ */
+export function verifyMessage(message: string, signature: string, publicKeyHex: string): boolean {
+  return NOMS.verifyMessage(message, signature, publicKeyHex);
 }

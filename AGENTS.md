@@ -263,7 +263,7 @@ NANO_RPC_URL=https://rpc.nano.to?key=YOUR-API-KEY
 
 The test auto-detects credentials:
 - URL has query params → Uses RPC `work_generate`
-- URL has no params → Uses local `nanocurrency.computeWork()`
+- URL has no params → Uses local nano-rspow-node (generateWork + WorkType) exclusively for client/server PoW
 
 **Multiple endpoints** (failover):
 ```bash

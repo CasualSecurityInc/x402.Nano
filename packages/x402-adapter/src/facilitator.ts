@@ -33,10 +33,6 @@ rpcClient: NanoRpcClient;
 spentSet?: SpentSetStorage;
 /** Optional session storage (defaults to in-memory Map) */
 sessionRegistry?: SessionRegistry;
-/** Optional tag modulus override */
-tagModulus?: number;
-/** Optional tag multiplier override */
-  tagMultiplier?: string | bigint;
   /**
    * Seed for Track 2 (nanoSignature) receive block signing.
    * 64-character hexadecimal string.
@@ -77,8 +73,6 @@ export class ExactNanoFacilitator implements SchemeNetworkFacilitator {
       rpcClient: config.rpcClient,
       spentSet: config.spentSet,
       sessionRegistry: config.sessionRegistry,
-      tagModulus: config.tagModulus,
-      tagMultiplier: config.tagMultiplier,
 seed: config.seed,
 accountIndex: config.accountIndex,
 receiveMode: config.receiveMode,

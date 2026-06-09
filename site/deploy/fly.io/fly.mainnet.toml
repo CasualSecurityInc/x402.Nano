@@ -15,8 +15,6 @@ VITE_TEST_AND_DEMO_SERVER_URL = "http://0.0.0.0:3001"
 # Cap V8 heap so Node OOM-crashes instead of swap-thrashing (fail-fast)
 NODE_OPTIONS = "--max-old-space-size=350"
 # DOTENV_CONFIG_PATH is omitted so the Express logic falls back to using the injected Fly secrets
-TAG_MULTIPLIER = "1000000000000000000000000"
-TAG_MODULUS = "10000"
 
 [http_service]
 internal_port = 3001

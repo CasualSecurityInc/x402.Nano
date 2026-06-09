@@ -66,7 +66,7 @@ NANO_RPC_URL=https://rpc.nano.to?key=YOUR-API-KEY
 
 The test automatically detects credentials:
 - **URL has query params** → Use RPC `work_generate` with exponential backoff on 429 rate limits
-- **URL has no query params** → Use local `nanocurrency.computeWork()`
+- **URL has no query params** → Use local `nano-rspow-node` (generateWork + WorkType.Send/Receive) exclusively for client and server PoW
 
 ### Multiple Endpoints (Failover)
 

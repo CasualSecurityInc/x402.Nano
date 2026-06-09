@@ -1,7 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { createServer } from 'http';
 import * as dotenv from 'dotenv';
-import { deriveSecretKey, derivePublicKey, deriveAddress, createBlock, signBlock, computeWork, validateWork, type BlockData } from 'nanocurrency';
+import { deriveSecretKey, derivePublicKey, deriveAddress, createBlock, signBlock, type BlockData } from 'nanocurrency';
+import { generateWork as generateWorkRsp, validateWork as validateWorkRsp, WorkType } from 'nano-rspow-node';
 import { NanoSessionFacilitatorHandler } from '@nanosession/facilitator';
 import { NanoSessionPaymentHandler } from '@nanosession/client';
 import { NanoRpcClient } from '@nanosession/rpc';
@@ -93,7 +94,7 @@ describe('Integration: Full Payment Flow', () => {
     return fallbackWorkThreshold;
   };
 
-  const generateWork = async (root: string) => {
+  const generateWork = async (root: string, isReceive = false) => {
     const threshold = await getWorkThreshold();
 
     if (hasRpcCredentials) {
@@ -120,11 +121,13 @@ describe('Integration: Full Payment Flow', () => {
       }
     }
 
-    const work = await computeWork(root, { workThreshold: threshold });
+    // Exclusively use nano-rspow-node for local client PoW in integration tests
+    const wt = isReceive ? WorkType.Receive : WorkType.Send;
+    const work = await generateWorkRsp(root, wt);
     if (!work) {
       throw new Error('Local work generation failed');
     }
-    if (!validateWork({ blockHash: root, work, threshold })) {
+    if (!validateWorkRsp(root, work, wt)) {
       throw new Error('Local work generation failed to meet threshold');
     }
     return work;
@@ -146,7 +149,7 @@ describe('Integration: Full Payment Flow', () => {
       return null;
     }
 
-    const work = await generateWork(accountInfo.frontier);
+    const work = await generateWork(accountInfo.frontier); // send (client PoW via rspow-node)
 
     // Use nanocurrency.createBlock to create the block
     const blockData: BlockData = {
@@ -233,7 +236,7 @@ describe('Integration: Full Payment Flow', () => {
       const isNewAccount = previous === '0' || previous === null || previous === undefined;
 
       const workRoot = isNewAccount ? serverPublicKey : previous;
-      const work = await generateWork(workRoot);
+      const work = await generateWork(workRoot, true); // receive/open PoW via rspow-node exclusively
 
       // Use nanocurrency.createBlock for receive blocks
       const receiveBlockData: BlockData = {
@@ -395,7 +398,7 @@ describe('Integration: Full Payment Flow', () => {
         return;
       }
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
 
       const clientAccountInfo = await getAccountInfoSafe(clientAddress);
       if (!clientAccountInfo) {
@@ -600,7 +603,7 @@ describe('Integration: Full Payment Flow', () => {
       // 4. Attacker tries to use victim's blockHash with sessionId B
       // 5. Server MUST reject: tag A ≠ tag B
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
 
       // Get requirements for two different "sessions"
       const victimRequirements = serverHandler.getRequirements({
@@ -671,7 +674,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Receipt Reuse (Double Spend Attempt)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
 
       const requirements = serverHandler.getRequirements({
         resourceAmountRaw: paymentAmount,
@@ -730,7 +733,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Session Spoofing (Unknown Session)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient, tagModulus: 1000000 });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
 
       // Create a real payment for a real session
       const realRequirements = serverHandler.getRequirements({
@@ -804,7 +807,6 @@ describe('Integration: Full Payment Flow', () => {
 
       const serverHandler = new NanoSessionFacilitatorHandler({
         rpcClient,
-        tagModulus: 1000000,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'
@@ -866,7 +868,6 @@ describe('Integration: Full Payment Flow', () => {
 
       const serverHandler = new NanoSessionFacilitatorHandler({
         rpcClient,
-        tagModulus: 1000000,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'

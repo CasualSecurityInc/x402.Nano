@@ -6,8 +6,6 @@
 import {
   SCHEME,
   NETWORK,
-  TAG_MODULUS,
-  TAG_MULTIPLIER,
   assertValidPaymentRequirements,
   assertValidRawAmount,
   createPaymentRequirements,
@@ -18,10 +16,9 @@ import {
   derivePublicKey,
   deriveSecretKey,
   createBlock,
-  computeWork,
-  validateWork,
   verifyBlock
 } from 'nanocurrency';
+import { generateWork as generateWorkRsp, WorkType } from 'nano-rspow-node';
 import blakejs from 'blakejs';
 import debug from 'debug';
 import type { PaymentRequirements, PaymentPayload } from '@nanosession/core';
@@ -53,10 +50,6 @@ export interface HandlerOptions {
   spentSet?: SpentSetStorage;
   /** Optional session storage (defaults to in-memory Map) */
   sessionRegistry?: SessionRegistry;
-  /** Optional tag modulus override (defaults to TAG_MODULUS) */
-  tagModulus?: number;
-  /** Optional tag multiplier override (defaults to TAG_MULTIPLIER) */
-  tagMultiplier?: string | bigint;
   /** Seed for generating receive blocks in Track 2 (nanoSignature) */
   seed?: string;
   /** Account index for the Facilitator's wallet. Defaults to 0. */
@@ -118,8 +111,6 @@ export class NanoSessionFacilitatorHandler {
    */
   private sessionRegistry: SessionRegistry;
   private activeSessionAmounts: Map<string, string>;
-  private tagModulus: number;
-  private tagMultiplier: bigint;
   private seed?: string;
   private accountIndex: number;
   private receiveMode: 'sync' | 'async';
@@ -127,12 +118,6 @@ export class NanoSessionFacilitatorHandler {
   constructor(options: HandlerOptions) {
     this.rpcClient = options.rpcClient;
     this.spentSet = options.spentSet ?? new InMemorySpentSet();
-    this.tagModulus = NanoSessionFacilitatorHandler.resolveTagModulus(
-      options.tagModulus ?? TAG_MODULUS
-    );
-    this.tagMultiplier = NanoSessionFacilitatorHandler.resolveTagMultiplier(
-      options.tagMultiplier ?? TAG_MULTIPLIER
-    );
     this.seed = options.seed;
     this.accountIndex = options.accountIndex ?? 0;
     this.receiveMode = options.receiveMode ?? 'sync';
@@ -146,26 +131,6 @@ export class NanoSessionFacilitatorHandler {
       has: (id) => inMemoryRegistry.has(id)
     };
     this.activeSessionAmounts = new Map();
-  }
-
-  private static resolveTagModulus(value: number): number {
-    if (!Number.isInteger(value) || value <= 0) {
-      throw new Error('Invalid tagModulus: must be a positive integer');
-    }
-    return value;
-  }
-
-  private static resolveTagMultiplier(value: string | bigint): bigint {
-    try {
-      const multiplier = typeof value === 'bigint' ? value : BigInt(value);
-      if (multiplier <= 0n) {
-        throw new Error('tagMultiplier must be greater than zero');
-      }
-      return multiplier;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Invalid tagMultiplier: ${message}`);
-    }
   }
 
   private releaseSession(sessionId: string): void {
@@ -210,14 +175,8 @@ export class NanoSessionFacilitatorHandler {
     payTo: string;
     /** How long before session expires */
     maxTimeoutSeconds?: number;
-    /** Optional deterministic tag value */
-    tag?: number;
-    /** Optional deterministic tag amount in raw */
+    /** Optional tag amount in raw (auto-generated if omitted) */
     tagAmountRaw?: string;
-    /** Optional tag modulus override */
-    tagModulus?: number;
-    /** Optional tag multiplier override */
-    tagMultiplier?: string | bigint;
   }): PaymentRequirements {
     assertValidRawAmount(args.resourceAmountRaw, 'resourceAmountRaw');
     if (args.tagAmountRaw !== undefined) {
@@ -226,33 +185,14 @@ export class NanoSessionFacilitatorHandler {
 
     const maxTimeoutSeconds = args.maxTimeoutSeconds ?? 600;
     const expiresAt = new Date(Date.now() + maxTimeoutSeconds * 1000).toISOString();
-    const deterministicTag = args.tag;
-    const deterministicTagAmountRaw = args.tagAmountRaw;
-    const tagModulus = NanoSessionFacilitatorHandler.resolveTagModulus(
-      args.tagModulus ?? this.tagModulus
-    );
-    const tagMultiplier = NanoSessionFacilitatorHandler.resolveTagMultiplier(
-      args.tagMultiplier ?? this.tagMultiplier
-    );
 
     for (let attempt = 0; attempt < 16; attempt++) {
-      const randomValue = randomBytes(4).readUInt32BE(0);
-      const tag = deterministicTag ?? (randomValue % tagModulus);
-
-      if (!Number.isInteger(tag) || tag < 0) {
-        throw new Error('Invalid tag: must be a non-negative integer');
-      }
-
-      if (tag >= tagModulus) {
-        throw new Error(`Invalid tag: must be less than tagModulus (${tagModulus})`);
-      }
-
-      const tagAmountRaw = deterministicTagAmountRaw ??
-        (BigInt(tag) * tagMultiplier).toString();
+      const tagAmountRaw = args.tagAmountRaw ??
+        randomBytes(8).readBigUInt64BE(0).toString();
       const amount = (BigInt(args.resourceAmountRaw) + BigInt(tagAmountRaw)).toString();
 
       if (this.isAmountInUse(amount)) {
-        if (deterministicTag !== undefined || deterministicTagAmountRaw !== undefined) {
+        if (args.tagAmountRaw !== undefined) {
           throw new Error(`Tagged amount collision for active session: ${amount}`);
         }
         continue;
@@ -263,7 +203,6 @@ export class NanoSessionFacilitatorHandler {
         payTo: args.payTo,
         maxTimeoutSeconds,
         id: sessionId,
-        tag,
         resourceAmountRaw: args.resourceAmountRaw,
         tagAmountRaw,
         amount,
@@ -666,8 +605,9 @@ export class NanoSessionFacilitatorHandler {
       const difficulty = await this.rpcClient.getActiveDifficulty();
       return await this.rpcClient.generateWork(root, difficulty);
     } catch {
-      const work = await computeWork(root, { workThreshold: 'fffffff800000000' });
-      if (!work) throw new Error('Local computeWork failed');
+      // Exclusively use nano-rspow-node for local server/facilitator PoW (receive blocks)
+      const work = await generateWorkRsp(root, WorkType.Receive);
+      if (!work) throw new Error('Local work generation (nano-rspow-node) failed');
       return work;
     }
   }

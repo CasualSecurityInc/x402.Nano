@@ -10,18 +10,15 @@ import {
 import {
   deriveSecretKey,
   createBlock,
-  computeWork,
-  validateWork,
   convert,
   Unit,
   type BlockData,
 } from 'nanocurrency';
+import { generateWork as generateWorkRsp, validateWork as validateWorkRsp, WorkType } from 'nano-rspow-node';
 import debug from 'debug';
 import { signMessage } from './signing.js';
 
 const log = debug('nanosession:client:payment');
-
-const FALLBACK_WORK_THRESHOLD = 'fffffff800000000';
 
 /**
  * An object that can execute a specific payment requirement
@@ -169,14 +166,13 @@ export class NanoSessionPaymentHandler {
       const difficulty = await this.rpcClient.getActiveDifficulty();
       return await this.rpcClient.generateWork(root, difficulty);
     } catch {
-      // RPC work generation failed - fall back to local CPU computation
-      log('RPC work generation failed, falling back to local CPU computation (this may take 10-30 seconds)...');
-      const threshold = await this.rpcClient.getActiveDifficulty().catch(() => undefined) ?? FALLBACK_WORK_THRESHOLD;
-      const work = await computeWork(root, { workThreshold: threshold });
+      // RPC work generation failed - fall back to local CPU/GPU computation via nano-rspow-node exclusively
+      log('RPC work generation failed, falling back to local CPU/GPU computation via nano-rspow-node (this may take seconds)...');
+      const work = await generateWorkRsp(root, WorkType.Send);
       if (!work) {
         throw new Error('Local work generation failed');
       }
-      if (!validateWork({ blockHash: root, work, threshold })) {
+      if (!validateWorkRsp(root, work, WorkType.Send)) {
         throw new Error('Local work failed threshold validation');
       }
       return work;

@@ -22,9 +22,10 @@
   "dependencies": {
     "@nanosession/core": "workspace:*",
     "@nanosession/rpc": "workspace:*",
-    "blakejs": "^1.2.1",
+    "@openrai/nano-core": "^3.1.1",
     "debug": "^4.4.0",
-    "nanocurrency": "^2.5.0"
+    "nanocurrency": "^2.5.0",
+    "nano-rspow-node": "^0.10.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12"

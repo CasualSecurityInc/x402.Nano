@@ -25,7 +25,7 @@ export default withMermaid(defineConfig({
                 text: 'About',
                 items: [
                     { text: 'Intro', link: '/' },
-                    { text: 'Protected Demo', link: '/protected' }
+                    { text: 'Protected Demo (legacy)', link: '/protected' }
                 ]
             },
             {
@@ -34,6 +34,13 @@ export default withMermaid(defineConfig({
                     { text: 'Protocol', link: '/protocol' },
                     { text: 'Track A: nanoTxn', link: '/extensions/track-a-nanotxn' },
                     { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' }
+                ]
+            },
+            {
+                text: 'Live Demos (Rev 8)',
+                items: [
+                    { text: 'Track A Demo', link: '/demo-track-a' },
+                    { text: 'Track B Demo', link: '/demo-track-b' }
                 ]
             },
             {

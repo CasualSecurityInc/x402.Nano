@@ -2,31 +2,55 @@
 title: Protected Content Demo
 ---
 
-# x402.NanoSession Rev 8 — Protected Content Demo
+# x402.NanoSession Rev 8 — Protected Content Demos
 
-This page demonstrates the active **Rev 8** `nanoMacaroon` flow.
+**New dedicated flows (recommended):**
+
+- [Track A (nanoTxn) Demo](/demo-track-a) — signed-block path with stable per-invoice deposit
+- [Track B (nanoSignature) Demo](/demo-track-b) — NOMS post-payment proof path with stable per-invoice deposit
+
+Both flows give you:
+- A unique deposit address that is **stable until you click the big red "Restart session"** button (reloads, network hiccups, Cmd-R all preserve the session = deposit = x402 challenge).
+- The original twin-tab layout (Manual/QR + MetaMask/Xnap).
+- An educational demonstration of receipt-reuse protection.
+
+---
+
+## Legacy single demo (being phased out)
+
+The content below describes the older undifferentiated flow. Use the two dedicated pages above for accurate Rev 8 Track A / Track B experiences.
+
+## Flow
+
+```
+(external wallet app) ← deposit QR ← (demo page JS) ← 402 → (protected demo server)
+                                        ⤷ retry with send hash → 200
+```
 
 The important sequence is:
 
-1. your first request for the protected resource returns `402 Payment Required`
-2. the browser shows the machine-readable `PAYMENT-REQUIRED` challenge
-3. the demo server now allocates a per-challenge destination from a bounded server-side address pool when `NANO_TEST_SEED` is configured
-3. after you pay, the browser uses the demo-only `/api/poll-for-demo` helper to poll for a matching confirmed send from the payer account you provide
-4. the browser retries the same protected resource request with `PAYMENT-SIGNATURE`
-5. the server verifies the settlement through its facilitator logic and returns `200 OK` with `PAYMENT-RESPONSE`
+1. Your first request for the protected resource returns `402 Payment Required` with a `PAYMENT-REQUIRED` header containing the exact amount and a destination address.
+2. The browser shows the challenge details and a QR code encoding `nano:<destination>?amount=<raw>`.
+3. Pay the exact amount from any Nano wallet to the displayed destination address.
+4. Enter your wallet's `nano_...` address in the demo page so the browser can poll for a matching confirmed send.
+5. The demo-only `/api/poll-for-demo` helper looks up recent sends from that account and checks for a match by destination + amount.
+6. When a match is found, the browser retries the protected resource request with a `PAYMENT-SIGNATURE` header containing the confirmed send hash.
+7. The server verifies the send on-chain (destination and amount), marks the hash as spent to prevent replay, and returns `200 OK` with the exclusive content.
 
-::: warning Warning: Exact Payment Required
-The `/api/poll-for-demo` helper is intentionally manufactured for clarity. It is **not** part of the normal x402 roundtrip.
+## Demo Notes
 
-In a real x402 client, the client itself is responsible for publishing the send block, so once `process(sendBlock)` succeeds it already has the send hash and can immediately retry the protected resource request with `PAYMENT-SIGNATURE`.
+- This demo uses a server-chosen `nano_...` destination address as the pay-to target (in production, a NanoNym root `nnym_...` would be used for stealth derivation).
+- The `/api/poll-for-demo` endpoint is a demo-only helper. In a production x402 client, the wallet or payment agent would return the send hash directly after publishing the block.
+- Settlement policy and access policy are separate concerns. This demo grants per-payment access; a deployment could instead issue a reusable credential after settlement.
 
-Also note that settlement policy and access policy are separate concerns: a deployment can redeem one payment into a reusable credential, or can choose a narrower pay-per-access policy by issuing credentials with much tighter caveats.
+## Security
 
-There is also an important security distinction: some deployments already have application-specific uniqueness for each checkout, while others are merely proxying a shared public URL. This demo now improves the checkout story by allocating a unique server destination per challenge when the demo server has a `NANO_TEST_SEED`, but it still does **not** implement the formal Track B payer-bound settlement extension.
-:::
+This flow implements the NanoNym receipt exact path (Path B) from the Rev 8 protocol:
 
-<NanoPaywall>
+- **Pay first**: the client pays before receiving access, avoiding the frontier dilemma of pre-signed blocks.
+- **Exact raw amounts**: the challenge amount includes a unique tag to prevent cross-challenge borrowing.
+- **Spent-hash tracking**: the server rejects duplicate send hashes, preventing replay across challenges.
 
-*Premium video content (requires payment to unlock)*
+This demo does **not** implement NanoNym witness verification (the client would need to derive a stealth destination from a `nnym_...` root and submit witness material in the retry). In production, NanoNym witness material adds receipt-theft resistance by binding the payment to a specific challenge's derivation path.
 
-</NanoPaywall>
+See the [Protocol Specification](/protocol) for the full wire format and verification rules.

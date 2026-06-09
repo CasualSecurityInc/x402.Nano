@@ -10,7 +10,7 @@
     "site:preview": "vitepress preview .",
     "demo:server": "tsx watch protected-resource-demo-server/index.ts",
     "demo:mainnet": "DOTENV_CONFIG_PATH=../.env pnpm demo:server",
-    "dev:demo": "TAG_MODULUS=10000 TAG_MULTIPLIER=1000000000000000000000000 ./scripts/dev-demo.sh",
+    "dev:demo": "./scripts/dev-demo.sh",
     "test:server": "vitest run protected-resource-demo-server/",
     "deploy:fly:mainnet": "cd .. && fly deploy -c site/deploy/fly.io/fly.mainnet.toml .",
     "clean": "rm -rf gen .vitepress/cache"
@@ -36,11 +36,13 @@
     "vue": "^3.3.0"
   },
   "dependencies": {
-    "@nanomacaroon/core": "file:../../nanoMacaroon/packages/core",
-    "@nanomacaroon/facilitator": "file:../../nanoMacaroon/packages/facilitator",
     "@nanosession/core": "workspace:*",
     "@nanosession/facilitator": "workspace:*",
     "@nanosession/rpc": "workspace:*",
+    "@openrai/nano-core": "^3.1.1",
+    "nanocurrency": "^2.5.0",
+    "nano-rspow-node": "^0.10.0",
+    "nano-rspow-web": "^0.10.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",

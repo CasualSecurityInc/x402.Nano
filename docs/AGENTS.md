@@ -10,11 +10,28 @@ This directory contains the **Canonical Source of Truth** for the x402.NanoSessi
 
 ### Upstream x402 Specification (PRIMARY)
 
+**Location**: `docs/references/x402-foundation/` (git submodule)
+
+This is a git submodule tracking `https://github.com/x402-foundation/x402.git` (main branch). It contains the current authoritative upstream x402 specification and reference implementation ecosystem.
+
+**This submodule takes precedence over the old Coinbase reference and the whitepaper** when looking for current x402-spec reference material.
+
+### Legacy x402 Reference
+
 **Location**: `docs/references/coinbase-x402/` (git submodule)
 
-This is a git submodule tracking `https://github.com/coinbase/x402.git` (main branch). It contains the authoritative upstream x402 specification from Coinbase.
+This tracks `https://github.com/coinbase/x402.git` and is retained for historical comparison only. Do not use it as the authority for new upstream proposals.
 
-**This submodule takes precedence over the whitepaper** when looking for original x402-spec reference material.
+### Nano CAIP And NOMS Standards
+
+Use `OpenRai/Standards` as the authoritative Nano standards reference:
+
+- **ORIS-001**: Nano Off-chain Message Signing (NOMS)
+- **ORIS-006**: Nano CAIP identifiers
+
+For x402/Nano public interoperability, use `network: "nano:mainnet"` per ORIS-006. Do not invent or emit `nano:testnet`, `nano:beta`, `nano:devnet`, or `nano:local` unless a future ORIS document standardizes them.
+
+For Rev 8's `nanoSignature` track, treat OpenRai/Standards ORIS-001 as normative for NOMS. Local x402.NanoSession docs may define x402 binding and deployment policy, but should not fork NOMS encoding or signing semantics.
 
 ### Ecosystem References (SECONDARY)
 
@@ -36,7 +53,7 @@ git submodule update --init --recursive
 
 To update to latest:
 ```bash
-git submodule update --remote docs/references/coinbase-x402
+git submodule update --remote docs/references/x402-foundation
 ```
 
 ### x402 v1 vs v2 Transport Note
