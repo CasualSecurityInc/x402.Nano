@@ -2,9 +2,9 @@
 title: Intro
 ---
 
-# x402.NanoSession (Rev 8) — Intro
+# x402.Nano — Introduction
 
-x402.NanoSession defines a per-request HTTP 402 payment profile for access to web resources and APIs using Nano (XNO) as the payment rail. It implements `scheme: "exact"` with payments settled instantly and feelessly, eliminating gas calculations and smart-contract overhead.
+x402.Nano defines a per-request HTTP 402 payment profile for access to web resources and APIs using Nano (XNO) as the payment rail. It implements `scheme: "exact"` with payments settled instantly and feelessly, eliminating gas calculations and smart-contract overhead.
 
 ## Why Nano for x402?
 
@@ -12,7 +12,7 @@ Nano's feeless, sub-second finality makes it a natural fit for per-request micro
 
 ## Two Complementary Mechanisms
 
-Rev 8 introduces two mechanism tracks under the same `scheme: "exact"` framework, each optimized for different deployment constraints:
+The specification introduces two mechanism tracks under the same `scheme: "exact"` framework, each optimized for different deployment constraints:
 
 - **Track A — `nanoTxn`** (signed-block): The client constructs and signs a full Nano state send block and passes it to the Facilitator, which validates and broadcasts it via the `process` RPC. Analogous to EVM's exact scheme. Best suited for single-purpose or agent wallets where the sending account's frontier is under programmatic control, as unrelated account activity between block construction and broadcast will invalidate the block.
 
@@ -22,7 +22,7 @@ A Facilitator MAY advertise one or both tracks in the `accepts` array of a 402 r
 
 Both mechanisms use `network: "nano:mainnet"` per OpenRai ORIS-006.
 
-## Protocol Structure
+## HTTP 402 Flow
 
 Both tracks follow the HTTP 402 flow:
 1. Client requests a protected resource
@@ -48,3 +48,4 @@ These can be deployed as a single monolithic service or as separate components, 
 - **[Protocol Specification](./protocol.md)**: Shared architecture, threat model, and security analysis.
 - **[Track A: nanoTxn](./extensions/track-a-nanotxn.md)**: Signed-block wire format and verification.
 - **[Track B: nanoSignature](./extensions/track-b-nanosignature.md)**: NOMS post-payment proof wire format and verification.
+- **[Ecosystem Landscape](./nano-x402-landscape.md)**: Side-by-side comparison with other Nano x402 implementations.

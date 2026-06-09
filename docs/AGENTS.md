@@ -2,9 +2,7 @@
 
 ## 📖 Specifications
 
-This directory contains the **Canonical Source of Truth** for the x402.Nano protocol. All changes to the protocol must happen here.
-
-**🚨 CRITICAL RULE:** **NEVER modify files under `docs/old/`**. The maintainer will gradually move previous versions of the spec in under there for archival purposes only.
+This directory contains the **Canonical Source of Truth** for the x402.Nano specification. All changes to the specification must happen here.
 
 ## 📚 Reference Materials
 
@@ -12,15 +10,17 @@ This directory contains the **Canonical Source of Truth** for the x402.Nano prot
 
 **Location**: `docs/references/x402-foundation/` (git submodule)
 
-This is a git submodule tracking `https://github.com/x402-foundation/x402.git` (main branch). It contains the current authoritative upstream x402 specification and reference implementation ecosystem.
+This is a git submodule tracking `https://github.com/x402-foundation/x402.git` (main branch). It contains the current authoritative upstream x402 specification, SDK implementations, and reference ecosystem.
 
-**This submodule takes precedence over the old Coinbase reference and the whitepaper** when looking for current x402-spec reference material.
+To initialize after cloning:
+```bash
+git submodule update --init
+```
 
-### Legacy x402 Reference
-
-**Location**: `docs/references/coinbase-x402/` (git submodule)
-
-This tracks `https://github.com/coinbase/x402.git` and is retained for historical comparison only. Do not use it as the authority for new upstream proposals.
+To update to latest:
+```bash
+git submodule update --remote docs/references/x402-foundation
+```
 
 ### Nano CAIP And NOMS Standards
 
@@ -32,29 +32,6 @@ Use `OpenRai/Standards` as the authoritative Nano standards reference:
 For x402/Nano public interoperability, use `network: "nano:mainnet"` per ORIS-006. Do not invent or emit `nano:testnet`, `nano:beta`, `nano:devnet`, or `nano:local` unless a future ORIS document standardizes them.
 
 For the `nanoSignature` track, treat OpenRai/Standards ORIS-001 as normative for NOMS. Local x402.Nano docs may define x402 binding and deployment policy, but should not fork NOMS encoding or signing semantics.
-
-### Ecosystem References (SECONDARY)
-
-The following repositories provide alternative or complementary implementations of the x402 protocol for the Nano network:
-
-- **`docs/references/facilitator`**: Reference facilitator implementation for Nano (`x402nano/facilitator`).
-- **`docs/references/exact`**: Exact payment scheme implementation for Nano (`x402nano/exact`).
-- **`docs/references/helper`**: Shared logic and utilities for Nano x402 components (`x402nano/helper`).
-- **`docs/references/typescript-common`**: Shared type definitions and schemas (`x402nano/typescript-common`).
-- **`docs/references/schemes`**: Registry for x402 payment schemes on Nano (`x402nano/schemes`).
-- **`docs/references/x402Nano-API`**: Integrated payment gateway API for AI agents (`isac-0000/x402Nano-API`).
-- **`docs/references/xnap`**: MetaMask Snap for Nano supporting x402 payloads (`ObsidiaHQ/xnap`).
-- **`docs/references/faremeter`**: Metered billing and sessions implementation (`faremeter/faremeter`).
-
-To initialize after cloning:
-```bash
-git submodule update --init --recursive
-```
-
-To update to latest:
-```bash
-git submodule update --remote docs/references/x402-foundation
-```
 
 ### x402 v1 vs v2 Transport Note
 
@@ -77,21 +54,13 @@ Quick mapping:
 
 ### 📝 Naming Convention
 
-Active protocol documents use simple flat names:
+Active specification documents use simple flat names:
 
 *   `index.md` — Introduction and overview
 *   `protocol.md` — Core specification
 *   `track-a-nanotxn.md` — Track A extension
 *   `track-b-nanosignature.md` — Track B extension
-
-Older revisions are archived under `docs/old/` with their original `_revX_` prefixed names.
-
-### 🔗 Relationships
-
-*   **Protocol**: Defines the base layer (Single Address, HTTP headers).
-*   **Extensions**: Modify or extend the base layer (e.g., Sharded Pools, Privacy).
-    *   Extensions MUST backlink to the Protocol.
-    *   Extensions inherit the base layer unless explicitly overridden.
+*   `nano-x402-landscape.md` — Ecosystem landscape
 
 ### 🛠️ Workflow
 
@@ -101,13 +70,13 @@ Older revisions are archived under `docs/old/` with their original `_revX_` pref
 
 ### 🔐 Security Review Requirements
 
-**All protocol changes MUST undergo security review.**
+**All specification changes MUST undergo security review.**
 
-The Rev 7 specification includes the formal Security Model for the **Receipt-Stealing Attack** — a vulnerability where attackers could steal payment proofs from the public blockchain.
+The specification includes the formal Security Model for the **Receipt-Stealing Attack** — a vulnerability where attackers could steal payment proofs from the public blockchain.
 
 #### Mandatory Review Checklist
 
-Before finalizing any protocol change:
+Before finalizing any specification change:
 
 1. **Read §1 Security Model** in `protocol.md`
 2. **Review the Session Binding Invariant** — sessions are security primitives
@@ -120,7 +89,7 @@ Before finalizing any protocol change:
 
 #### Why This Matters
 
-NanoSession handles real financial transactions. A security flaw means:
+x402.Nano handles real financial transactions. A security flaw means:
 - Users lose money
 - Attackers get free access
 - Protocol trust is destroyed

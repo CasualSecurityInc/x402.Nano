@@ -1,34 +1,3 @@
-[submodule "docs/references/coinbase-x402"]
-	path = docs/references/coinbase-x402
-	url = https://github.com/coinbase/x402.git
-	branch = main
-[submodule "docs/references/xnap"]
-	path = docs/references/xnap
-	url = https://github.com/ObsidiaHQ/xnap.git
-	branch = master
-[submodule "docs/references/faremeter"]
-	path = docs/references/faremeter
-	url = https://github.com/faremeter/faremeter.git
-	branch = main
-[submodule "docs/references/facilitator"]
-	path = docs/references/facilitator
-	url = https://github.com/x402nano/facilitator
-	branch = main
-[submodule "docs/references/x402Nano-API"]
-	path = docs/references/x402Nano-API
-	url = https://github.com/isac-0000/x402Nano-API.git
-[submodule "docs/references/exact"]
-	path = docs/references/exact
-	url = https://github.com/x402nano/exact.git
-[submodule "docs/references/helper"]
-	path = docs/references/helper
-	url = https://github.com/x402nano/helper.git
-[submodule "docs/references/typescript-common"]
-	path = docs/references/typescript-common
-	url = https://github.com/x402nano/typescript-common.git
-[submodule "docs/references/schemes"]
-	path = docs/references/schemes
-	url = https://github.com/x402nano/schemes.git
 [submodule "docs/references/x402-foundation"]
 	path = docs/references/x402-foundation
 	url = https://github.com/x402-foundation/x402.git

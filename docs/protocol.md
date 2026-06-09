@@ -2,21 +2,21 @@
 title: Protocol Specification
 ---
 
-# x402.NanoSession Protocol Specification (Rev 8)
+# x402.Nano Specification
 
 **Status:** Draft  
 **Date:** June 2026
 
 ## Abstract
 
-x402.NanoSession Rev 8 defines two Nano-specific `exact` payment mechanism variants for x402:
+x402.Nano defines two Nano-specific `exact` payment mechanism variants for x402:
 
 - **Track A: `nanoTxn`** — a signed-block approach where the client constructs a full Nano state send block, the facilitator validates it cryptographically, then broadcasts it to the network.
 - **Track B: `nanoSignature`** — a post-payment proof where the client sends Nano on-chain first, then proves sender ownership via a NOMS (ORIS-001) signature over `blockHash:nonce:validBefore`.
 
 Both tracks are `scheme: "exact"` mechanisms using `network: "nano:mainnet"` per OpenRai ORIS-006. A Facilitator MAY advertise one or both in the `accepts` array of a 402 response.
 
-This document covers the shared protocol architecture, threat model, and security analysis. Wire format and verification details are in the track specs:
+This document covers the shared mechanism architecture, threat model, and security analysis. Wire format and verification details are in the track specs:
 
 - [Track A: nanoTxn](./extensions/track-a-nanotxn.md)
 - [Track B: nanoSignature](./extensions/track-b-nanosignature.md)
@@ -94,14 +94,14 @@ The Nano CAIP-2 chain ID for public x402 interoperability is `nano:mainnet`, per
 
 ## 1. Threat Model and Assumptions
 
-Rev 8 is designed for the following realistic environment:
+The protocol is designed for the following realistic environment:
 
 - The Nano ledger is public and fully observable.
 - Attackers may obtain their own economically equivalent payment challenges.
 - Attackers may watch public send blocks and attempt to reuse observed block hashes.
 - The HTTP dialogue between client and server runs over authenticated and confidential transport (HTTPS).
 
-Rev 8 does **not** attempt to remain secure if the entire x402 dialogue is exposed to a plaintext-sniffing network attacker. If the request and retry payloads are visible in transit, the deployment is already outside the intended security envelope.
+The protocol does **not** attempt to remain secure if the entire x402 dialogue is exposed to a plaintext-sniffing network attacker. If the request and retry payloads are visible in transit, the deployment is already outside the intended security envelope.
 
 ---
 

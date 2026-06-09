@@ -38,7 +38,8 @@ export default withMermaid(defineConfig({
                 items: [
                     { text: 'Protocol', link: '/protocol' },
                     { text: 'Track A: nanoTxn', link: '/extensions/track-a-nanotxn' },
-                    { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' }
+                    { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' },
+                    { text: 'Ecosystem', link: '/ecosystem' }
                 ]
             },
             {

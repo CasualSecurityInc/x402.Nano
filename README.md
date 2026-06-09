@@ -1,10 +1,10 @@
-# x402.NanoSession
+# x402.Nano
 
 > **Feeless, instant machine-to-machine payments via HTTP 402**
 
 Implement the [HTTP 402](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402) status code using [Nano](https://nano.org/) (XNO) cryptocurrency. Zero fees. Sub-second settlement. High-frequency M2M payments.
 
-This repository contains the **x402-style HTTP binding** for the `nanoMacaroon` mechanism plus a protected-resource demo and supporting site/docs.
+This repository contains the **x402.Nano specification** — two Nano-specific mechanisms (Track A: `nanoTxn`, Track B: `nanoSignature`) for the x402 protocol — plus reference implementations and supporting site/docs.
 
 ## Why Nano for x402?
 
@@ -13,12 +13,12 @@ This repository contains the **x402-style HTTP binding** for the `nanoMacaroon` 
 - **Protocol-Bound**: Payment settlement is bound to an issued challenge and redeemed into a reusable capability
 - **Simple**: `PAYMENT-REQUIRED` -> pay -> `PAYMENT-SIGNATURE` retry -> `PAYMENT-RESPONSE`
 
-The active direction in this repository is a single-track x402 binding built on top of `nanoMacaroon`. Older `nanoSession` / `nanoSignature` material should be treated as legacy or archival context, not the current protocol direction.
+The active direction in this repository is a dual-track mechanism specification (Track A: `nanoTxn`, Track B: `nanoSignature`) for settlement-bound HTTP 402 payments on Nano.
 
 ## Repository Layout
 
 ```
-x402.NanoSession/
+x402.Nano/
 ├── packages/                   # TypeScript libraries (@nanosession/*)
 │   ├── core/                   # Types, constants, schema mapping
 │   ├── rpc/                    # Nano RPC client with endpoint failover
@@ -29,7 +29,7 @@ x402.NanoSession/
 │   ├── standalone-facilitator/ # Reference standalone facilitator server
 │   ├── client/                 # Reference paying client
 │   └── faremeter-server/       # Express + Faremeter integration example
-├── docs/                       # Active protocol docs (source of truth)
+├── docs/                       # Mechanism specification docs
 ├── site/                       # VitePress docs + protected-resource demo server
 └── test/integration/           # E2E tests with real Nano mainnet transactions
 ```
@@ -50,7 +50,7 @@ pnpm install
 
 ### Documentation Site
 
-Generate and preview the protocol specification website:
+Generate and preview the specification website:
 
 ```bash
 cd site
@@ -130,7 +130,7 @@ pnpm test:integration
 
 | Resource | Description |
 |----------|-------------|
-| **[Protocol Spec](./docs/protocol.md)** | Active x402 binding spec for `nanoMacaroon` |
+| **[Specification](./docs/protocol.md)** | x402.Nano mechanism specification (Track A + Track B) |
 | **[Examples](./examples/)** | Working server and client with step-by-step instructions |
 | **[Integration Tests](./test/integration/)** | Real Nano transactions on mainnet |
 
@@ -150,7 +150,7 @@ All packages are published under the `@nanosession` scope.
 
 ### x402 Extensions
 
-`@nanosession/core` includes utility helpers for the upstream x402 [`payment-identifier`](https://docs.x402.org/) extension, which provides client-generated idempotency keys for deduplicating payment requests. This is orthogonal to NanoSession's built-in anti-replay mechanisms (spent set, session binding, signature binding) and operates at the HTTP request layer only.
+`@nanosession/core` includes utility helpers for the upstream x402 [`payment-identifier`](https://docs.x402.org/) extension, which provides client-generated idempotency keys for deduplicating payment requests. This is orthogonal to x402.Nano's built-in anti-replay mechanisms (spent set, session binding, signature binding) and operates at the HTTP request layer only.
 
 ```typescript
 import {

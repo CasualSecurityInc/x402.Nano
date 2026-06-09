@@ -20,7 +20,7 @@ First, you need a Fly.io account and the command-line utility.
 Instead of relying on the interactive `fly launch` wizard, we use declarative commands. This ensures our setup is repeatable (and easily portable to Terraform if needed later).
 
 > [!IMPORTANT]
-> **Working Directory:** All commands in this section assume you are running them from the **root directory of the monorepo** (e.g., `x402.NanoSession/`).
+> **Working Directory:** All commands in this section assume you are running them from the **root directory of the monorepo** (e.g., `x402.Nano/`).
 
 ### Create the Server
 1. Create the application container:

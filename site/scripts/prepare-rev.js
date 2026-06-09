@@ -16,6 +16,7 @@ fs.mkdirSync(EXTENSIONS_DIR, { recursive: true });
 const coreFiles = [
   { src: 'index.md', dest: 'index.md' },
   { src: 'protocol.md', dest: 'protocol.md' },
+  { src: 'nano-x402-landscape.md', dest: 'ecosystem.md' },
 ];
 
 coreFiles.forEach(({ src, dest }) => {

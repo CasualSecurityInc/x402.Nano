@@ -43,7 +43,7 @@ We do **not** edit markdown files in `site/gen/docs/` directly. Instead, we gene
 3.  **Copies Demo Pages**: `protected.md`, `demo-track-a.md`, `demo-track-b.md`
 
 **⚠️ AGENT POLICY**
-1. **Hardcoded Revisions**: The build script does not perform magic string replacement for document bodies. You must manually grep and update any hardcoded string matches (e.g. `using the **Rev 6** protocol flow` or `Rev. 6`) across `site/*.md` whenever you bump the protocol revision.
+1. **Hardcoded Protocol References**: The build script does not perform magic string replacement for document bodies. You must manually grep and update any hardcoded string matches (e.g. `using the x402.Nano protocol flow`) across `site/*.md` whenever you change the protocol.
 2. **No NVM**: Never attempt to change Node versions using `nvm`. Stick to the system default node.
 3. **Calculation Logic**: Always use the `@nanosession/core` utility `calculateTaggedAmount` for anything involving payment amounts. Never calculate BigInt sums for payment decomposition (`resourceAmountRaw + tagAmountRaw`) manually in UI or server code.
 
@@ -114,4 +114,4 @@ tmux send-keys -t demo 'pnpm dev:demo' Enter  # Start servers
 *   **Dead Links**: VitePress build will FAIL if there are broken internal links.
     *   *Fix*: Ensure `prepare-rev.js` correctly rewrites links from the source Markdown to the new web paths.
 *   **EADDRINUSE (Port 3001)**: If `pnpm run dev:demo` fails saying port 3001 is in use, an old `tsx demo-server/index.ts` process is still running. Use `killall -9 node tsx` to free the port.
-*   **Wallet Precision Truncation Bug (Nault)**: The Nault consumer wallet currently has a bug where it truncates outgoing fractions to 6 decimal places, destroying the required NanoSession dust tag and causing payments to be ignored by the WebSocket. Test using Natrium, the Xnap plugin, or `scripts/test-payment.ts`.
+*   **Wallet Precision Truncation Bug (Nault)**: The Nault consumer wallet currently has a bug where it truncates outgoing fractions to 6 decimal places, destroying the required x402.Nano dust tag and causing payments to be ignored by the WebSocket. Test using Natrium, the Xnap plugin, or `scripts/test-payment.ts`.

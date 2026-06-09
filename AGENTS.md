@@ -1,6 +1,6 @@
 # AGENTS.md
 
-**Project**: x402.NanoSession  
+**Project**: x402.Nano  
 **Generated**: 2026-03-02  
 **Goal**: Feeless, instant machine-to-machine payments via HTTP 402 using Nano cryptocurrency
 
@@ -8,7 +8,7 @@
 
 ## OVERVIEW
 
-TypeScript monorepo implementing the NanoSession protocol — a session-bound payment system for HTTP 402 using Nano cryptocurrency.
+TypeScript monorepo implementing x402.Nano — two Nano-specific payment mechanisms for the x402 standard via HTTP 402 using Nano cryptocurrency.
 
 **Goals:**
 - **x402 Compatible**: Implements the [coinbase/x402](https://docs.x402.org/) specification for HTTP 402 Payment Required flows
@@ -30,7 +30,7 @@ TypeScript monorepo implementing the NanoSession protocol — a session-bound pa
 │   ├── client/        # PaymentHandler for clients
 │   └── faremeter-plugin/  # Faremeter middleware adapter
 ├── examples/          # Working demos (server, client, faremeter)
-├── docs/              # Protocol specs (source of truth)
+├── docs/              # Mechanism specification docs (source of truth)
 ├── site/              # VitePress docs + live demo server
 └── test/integration/  # E2E tests with real Nano mainnet
 ```
@@ -41,7 +41,7 @@ TypeScript monorepo implementing the NanoSession protocol — a session-bound pa
 
 | Task | Location | Notes |
 |------|----------|-------|
-| **Protocol specs** | `docs/protocol.md` | Current active revision |
+| **Specification docs** | `docs/protocol.md` | Current mechanism specification |
 | **Core types** | `packages/core/src/index.ts` | Exports all public types |
 | **Server handler** | `packages/facilitator/src/handler.ts` | FacilitatorHandler implementation |
 | **Client handler** | `packages/client/src/handler.ts` | PaymentHandler implementation |
@@ -78,8 +78,8 @@ Use these terms consistently across code and docs:
 2. **Mechanism = how funds/proof move for that scheme on a network**
    - Examples: EIP-3009, Permit2, Solana fee-payer flows, Nano block-hash proof with session binding.
 
-3. **NanoSession positioning**
-   - NanoSession is an `exact` **mechanism/profile**, not a separate scheme id.
+3. **x402.Nano positioning**
+   - x402.Nano is an `exact` **mechanism/profile**, not a separate scheme id.
 
 4. **Terminology rule**
    - Do not use "method" when "mechanism" is intended.
@@ -173,9 +173,9 @@ Internal deps use `workspace:*` in package.json.
 
 ## SECURITY MODEL
 
-**The Receipt-Stealing Attack (Rev6 Protection):**
+**The Receipt-Stealing Attack (Session Binding Protection):**
 
-Before this protection, attackers could steal payment proofs from the public blockchain and reuse them. NanoSession prevents this via **session binding**:
+Before this protection, attackers could steal payment proofs from the public blockchain and reuse them. x402.Nano prevents this via **session binding**:
 
 1. Server generates unique `sessionId` + `tag` for each request
 2. Server emits `amount` as the exact send amount and transparency fields (`resourceAmountRaw`, `tagAmountRaw`, `tag`)
@@ -286,5 +286,5 @@ NANO_RPC_URLS=https://primary.example.com?key=ABC,https://backup.example.com
 
 | Directory | Purpose |
 |-----------|---------|
-| [docs/](./docs/AGENTS.md) | Protocol specifications (canonical source) |
+| [docs/](./docs/AGENTS.md) | Mechanism specifications (canonical source) |
 | [site/](./site/AGENTS.md) | VitePress docs site + demo server |
