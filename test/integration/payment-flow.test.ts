@@ -398,8 +398,9 @@ describe('Integration: Full Payment Flow', () => {
         console.log(`Test skipped - ${skipReason || 'integration prerequisites not met'}`);
         return;
       }
+      if (!rpcClient) return;
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient: rpcClient! });
 
       const clientAccountInfo = await getAccountInfoSafe(clientAddress);
       if (!clientAccountInfo) {
@@ -444,6 +445,11 @@ describe('Integration: Full Payment Flow', () => {
 
             try {
               const payload = decodePaymentSignature(paymentSignature as string);
+              if (!payload) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Invalid payload' }));
+                return;
+              }
               const sessionId = payload.accepted.extra.nanoSession?.id;
               const requirements = sessionId ? requirementsCache.get(sessionId) : undefined;
 
@@ -497,15 +503,17 @@ describe('Integration: Full Payment Flow', () => {
         expect(response1.status).toBe(402);
         const paymentRequiredHeader = response1.headers.get('PAYMENT-REQUIRED');
         expect(paymentRequiredHeader).toBeTruthy();
-
         const paymentRequired = decodePaymentRequired(paymentRequiredHeader!);
+        expect(paymentRequired).toBeTruthy();
+        if (!paymentRequired) throw new Error('Failed to decode PaymentRequired');
+
         const requirements = paymentRequired.accepts[0];
         console.log('   ✓ Received 402 with PaymentRequirements');
         console.log(`   💰 Amount: ${requirements.amount} raw (${Number(requirements.amount) / 1e30} XNO)`);
 
         console.log('\n💳 Step 2: Creating payment...');
         const clientHandler = new NanoSessionPaymentHandler({
-          rpcClient,
+          rpcClient: rpcClient!,
           seed,
           maxSpend: process.env.NANO_MAX_SPEND || '1000000000000000000000000000'
         });
@@ -604,7 +612,7 @@ describe('Integration: Full Payment Flow', () => {
       // 4. Attacker tries to use victim's blockHash with sessionId B
       // 5. Server MUST reject: tag A ≠ tag B
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient: rpcClient! });
 
       // Get requirements for two different "sessions"
       const victimRequirements = serverHandler.getRequirements({
@@ -675,7 +683,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Receipt Reuse (Double Spend Attempt)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient: rpcClient! });
 
       const requirements = serverHandler.getRequirements({
         resourceAmountRaw: paymentAmount,
@@ -734,7 +742,7 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n🔓 ATTACK TEST: Session Spoofing (Unknown Session)');
 
-      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient });
+      const serverHandler = new NanoSessionFacilitatorHandler({ rpcClient: rpcClient! });
 
       // Create a real payment for a real session
       const realRequirements = serverHandler.getRequirements({
@@ -807,7 +815,7 @@ describe('Integration: Full Payment Flow', () => {
       }
 
       const serverHandler = new NanoSessionFacilitatorHandler({
-        rpcClient,
+        rpcClient: rpcClient!,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'
@@ -830,13 +838,13 @@ describe('Integration: Full Payment Flow', () => {
 
       console.log('\n💳 Track 2: Client generating payment via handler...');
       const clientHandler = new NanoSessionPaymentHandler({
-        rpcClient,
+        rpcClient: rpcClient!,
         seed: clientSecretKey, // the seed was derived directly as clientSecretKey in these specs
         maxSpend: process.env.NANO_MAX_SPEND || '1000000000000000000000000000'
       });
       // The test setup actually uses seed=seed, accountIndex=0 for client, so let's use that
       const properClientHandler = new NanoSessionPaymentHandler({
-        rpcClient,
+        rpcClient: rpcClient!,
         seed: seed,
         accountIndex: 0,
         maxSpend: process.env.NANO_MAX_SPEND || '1000000000000000000000000000'
@@ -868,7 +876,7 @@ describe('Integration: Full Payment Flow', () => {
       if (shouldSkip) return;
 
       const serverHandler = new NanoSessionFacilitatorHandler({
-        rpcClient,
+        rpcClient: rpcClient!,
         seed: seed,
         accountIndex: 1,
         receiveMode: 'sync'
@@ -885,7 +893,7 @@ describe('Integration: Full Payment Flow', () => {
       if (!clientInfo || BigInt(clientInfo.balance) < BigInt(paymentAmount)) return;
 
       const clientHandler = new NanoSessionPaymentHandler({
-        rpcClient,
+        rpcClient: rpcClient!,
         seed: seed,
         accountIndex: 0
       });

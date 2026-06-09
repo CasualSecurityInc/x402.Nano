@@ -71,3 +71,9 @@ export type {
   CreatePaymentPayloadOpts,
   CreatePaymentRequiredOpts,
 } from './compat.js';
+
+// Mapping aliases (backward-compatible header names)
+export {
+  encodePaymentSignature,
+  decodePaymentSignature,
+} from './mapping.js';

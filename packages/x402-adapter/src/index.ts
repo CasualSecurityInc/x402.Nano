@@ -5,11 +5,43 @@
  * Simplified single-track implementation.
  */
 
-import type { NanoMacaroonFacilitator } from '@nanomacaroon/facilitator';
 import type { PaymentRequired, PaymentPayload, PaymentRequirements } from '@nanosession/core';
 import { buildPaymentRequired, encodePaymentRequired, decodePaymentPayload } from '@nanosession/core';
 
 export type { PaymentRequired, PaymentPayload, PaymentRequirements };
+
+/**
+ * Minimal interface for a nanoMacaroon-compatible facilitator
+ */
+interface NanoMacaroonFacilitator {
+  createChallenge(
+    destination: string,
+    amount: string,
+    options: { resourceUrl: string; resourceDescription?: string }
+  ): Promise<{
+    version: string;
+    mechanism: string;
+    mode: 'settle';
+    id: string;
+    scheme: 'exact';
+    network: `${string}:${string}`;
+    asset: string;
+    amount: string;
+    destination: string;
+    settlementPolicy: string;
+    expiresInSeconds: number;
+    createdAt: string;
+    issuedAt: string;
+    expiresAt: string;
+    resource: { url: string; description?: string; mimeType?: string };
+  }>;
+  verifyCredential(credential: string, resourceUrl?: string): Promise<{ valid: boolean; error?: string }>;
+  verifySettlement(proof: { blockHash: string; sourceAddress: string; challengeId: string }): Promise<{
+    valid: boolean;
+    error?: string;
+    credential?: string;
+  }>;
+}
 
 /**
  * x402 Server Adapter
@@ -57,19 +89,20 @@ export class X402Adapter {
   }> {
     // Check for credential first
     if (payload.payload.credential) {
+      const credential = payload.payload.credential as string;
       const result = await this.facilitator.verifyCredential(
-        payload.payload.credential,
+        credential,
         payload.resource?.url
       );
       return {
         valid: result.valid,
         error: result.error,
-        credential: result.valid ? payload.payload.credential : undefined,
+        credential: result.valid ? credential : undefined,
       };
     }
 
     // Otherwise verify settlement proof
-    const challengeId = payload.accepted.extra?.challengeId;
+    const challengeId = payload.accepted.extra?.challengeId as string | undefined;
     if (!challengeId) {
       return { valid: false, error: 'Missing challenge ID' };
     }
