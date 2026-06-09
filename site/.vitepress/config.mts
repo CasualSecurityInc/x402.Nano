@@ -12,7 +12,12 @@ export default withMermaid(defineConfig({
     outDir: './gen/dist',
     cacheDir: './gen/.vitepress/cache',
     cleanUrls: true,
-    mermaid: {}, // Optional mermaid configuration
+    mermaid: {},
+    vite: {
+        ssr: {
+            external: ['nano-rspow-web', 'nano-rspow-node', '@openrai/nano-core']
+        }
+    },
     themeConfig: {
         nav: [
             { text: 'Intro', link: '/' },
