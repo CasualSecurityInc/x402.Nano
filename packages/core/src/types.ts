@@ -4,19 +4,87 @@
  * Unified type system supporting both nanoMacaroon mechanism and legacy session/signature tracks.
  */
 
-import type {
-  Network,
-  Challenge,
-  SettlementProof,
-  SettlementResult,
-  AccessProof,
-  MacaroonCredential,
-} from '@nanomacaroon/core';
+// ── Network identifier ───────────────────────────────────────────────
+/** Network identifier in CAIP-2 format, e.g. "nano:mainnet" */
+export type Network = `${string}:${string}`;
+
+// ── Macaroon credential (opaque base64-url string) ───────────────────
+export type MacaroonCredential = string;
+
+// ── nanoMacaroon types (vendored, no external dependency) ────────────
 
 /**
- * Re-export core types for x402 compatibility
+ * A challenge issued by a facilitator to a client
  */
-export type { Network, Challenge, SettlementProof, SettlementResult, AccessProof, MacaroonCredential };
+export interface Challenge {
+  version: string;
+  mechanism: string;
+  mode: 'settle';
+  id: string;
+  scheme: 'exact';
+  network: Network;
+  asset: string;
+  amount: string;
+  destination: string;
+  settlementPolicy: string;
+  expiresInSeconds: number;
+  createdAt: string;
+  issuedAt: string;
+  expiresAt: string;
+  resource?: ResourceInfo;
+  caveats?: { cid: string; value: string }[];
+  serverProof?: string;
+}
+
+/**
+ * Proof of settlement submitted by client
+ */
+export interface SettlementProof {
+  version: string;
+  mechanism: string;
+  mode: 'settle';
+  challenge?: string;
+  sendHash: string;
+  payerAccount: string;
+  challengeId: string;
+  sendBlock?: Record<string, unknown>;
+  proofOptions?: { blockIncluded?: boolean };
+}
+
+/**
+ * Settlement details extracted from verification
+ */
+export interface SettlementDetails {
+  challengeId: string;
+  sendHash: string;
+  payerAccount: string;
+  destination: string;
+  network: Network;
+  amount: string;
+  settledAt: string;
+}
+
+/**
+ * Result returned by the server after accepting settlement
+ */
+export interface SettlementResult {
+  version: string;
+  mechanism: string;
+  mode: 'access';
+  challengeId: string;
+  acceptedPayment: SettlementDetails;
+  credential: { format: 'macaroon'; value: MacaroonCredential; expiresAt?: string };
+}
+
+/**
+ * Access proof submitted on later requests
+ */
+export interface AccessProof {
+  version: string;
+  mechanism: string;
+  mode: 'access';
+  credential: MacaroonCredential;
+}
 
 /**
  * Track A (nanoSession) extra data embedded in PaymentRequirements

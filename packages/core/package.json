@@ -20,7 +20,6 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@nanomacaroon/core": "file:../../../nanoMacaroon/packages/core",
     "nanocurrency": "^2.5.0",
     "zod": "^3.22.0"
   },

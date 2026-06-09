@@ -9,7 +9,7 @@ import type {
   SettlementProof,
   SettlementResult,
   AccessProof,
-} from '@nanomacaroon/core';
+} from './types.js';
 import type {
   PaymentRequired,
   PaymentRequirements,

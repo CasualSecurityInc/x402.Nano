@@ -242,9 +242,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@nanomacaroon/core':
-        specifier: file:../../../nanoMacaroon/packages/core
-        version: file:../nanoMacaroon/packages/core
       nanocurrency:
         specifier: ^2.5.0
         version: 2.5.0
@@ -1306,9 +1303,6 @@ packages:
 
   '@mermaid-js/parser@1.0.1':
     resolution: {integrity: sha512-opmV19kN1JsK0T6HhhokHpcVkqKpF+x2pPDKKM2ThHtZAB5F4PROopk0amuVYK5qMrIA4erzpNm8gmPNJgMDxQ==}
-
-  '@nanomacaroon/core@file:../nanoMacaroon/packages/core':
-    resolution: {directory: ../nanoMacaroon/packages/core, type: directory}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -5881,8 +5875,6 @@ snapshots:
   '@mermaid-js/parser@1.0.1':
     dependencies:
       langium: 4.2.1
-
-  '@nanomacaroon/core@file:../nanoMacaroon/packages/core': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
