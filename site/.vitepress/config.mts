@@ -15,7 +15,7 @@ export default withMermaid(defineConfig({
     mermaid: {},
     vite: {
         ssr: {
-            external: ['nano-rspow-web', 'nano-rspow-node', '@openrai/nano-core']
+            noExternal: ['nano-rspow-web']
         }
     },
     themeConfig: {
