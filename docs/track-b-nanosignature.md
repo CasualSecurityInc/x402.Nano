@@ -2,7 +2,7 @@
 title: "Track B: nanoSignature"
 ---
 
-# Track B: nanoSignature — NOMS Signature Method
+# Track B: nanoSignature — NOMS Signature Mechanism
 
 ## Summary
 

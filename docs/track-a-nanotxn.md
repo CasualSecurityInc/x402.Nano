@@ -2,7 +2,7 @@
 title: "Track A: nanoTxn"
 ---
 
-# Track A: nanoTxn — Signed-Block Method
+# Track A: nanoTxn — Signed-Block Mechanism
 
 ## Summary
 

@@ -39,7 +39,11 @@ export default withMermaid(defineConfig({
                     { text: 'Protocol', link: '/protocol' },
                     { text: 'Track A: nanoTxn', link: '/extensions/track-a-nanotxn' },
                     { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' },
-                    { text: 'Ecosystem', link: '/ecosystem' }
+                    { text: 'Ecosystem', link: '/ecosystem' },
+                    { text: 'Consistency audit', link: '/audits/protocol-consistency-audit' },
+                    { text: 'Mechanism decision', link: '/architecture/mechanism-decision' },
+                    { text: 'Implementation brief', link: '/adoption/nano-x402-implementation-brief' },
+                    { text: 'Implementation report', link: '/implementation-report' }
                 ]
             },
             // {

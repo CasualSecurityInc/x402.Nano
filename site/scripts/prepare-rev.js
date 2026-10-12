@@ -17,11 +17,16 @@ const coreFiles = [
   { src: 'index.md', dest: 'index.md' },
   { src: 'protocol.md', dest: 'protocol.md' },
   { src: 'nano-x402-landscape.md', dest: 'ecosystem.md' },
+  { src: 'audits/protocol-consistency-audit.md', dest: 'audits/protocol-consistency-audit.md' },
+  { src: 'architecture/mechanism-decision.md', dest: 'architecture/mechanism-decision.md' },
+  { src: 'adoption/nano-x402-implementation-brief.md', dest: 'adoption/nano-x402-implementation-brief.md' },
+  { src: 'implementation-report.md', dest: 'implementation-report.md' },
 ];
 
 coreFiles.forEach(({ src, dest }) => {
   const srcPath = path.join(SOURCE_DIR, src);
   const destPath = path.join(TARGET_DIR, dest);
+  fs.mkdirSync(path.dirname(destPath), { recursive: true });
   fs.copyFileSync(srcPath, destPath);
   console.log(`Copied: ${src} -> ${dest}`);
 });

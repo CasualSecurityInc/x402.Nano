@@ -4,7 +4,7 @@ title: Protocol Specification
 
 # x402.Nano Specification
 
-**Status:** Draft  
+**Status:** Draft; design proposal, not a claim of implementation conformance
 **Date:** June 2026
 
 ## Abstract
@@ -17,6 +17,8 @@ x402.Nano defines two Nano-specific `exact` payment mechanism variants for x402:
 Both tracks are `scheme: "exact"` mechanisms using `network: "nano:mainnet"` per OpenRai ORIS-006. A Facilitator MAY advertise one or both in the `accepts` array of a 402 response.
 
 This document covers the shared mechanism architecture, threat model, and security analysis. Wire format and verification details are in the track specs:
+
+> **Implementation status:** The current package handlers do not implement both tracks as specified here. See the [protocol consistency audit](./audits/protocol-consistency-audit.md) before treating this document as an implementation contract.
 
 - [Track A: nanoTxn](./extensions/track-a-nanotxn.md)
 - [Track B: nanoSignature](./extensions/track-b-nanosignature.md)
