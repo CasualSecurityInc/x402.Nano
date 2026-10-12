@@ -36,7 +36,7 @@ Record the requirements, payload, RPC observations, state-store operations, and 
 
 ## Current x402.Nano state
 
-The intended documents are [Protocol Specification](../protocol.md), [Track A](../track-a-nanotxn.md), and [Track B](../track-b-nanosignature.md). The package handlers and demo are not yet one conforming implementation; see the [audit](../audits/protocol-consistency-audit.md) and [decision record](../architecture/mechanism-decision.md). The canonical repository is [CasualSecurityInc/x402.Nano](https://github.com/CasualSecurityInc/x402.Nano); the evolving docs are published at [csi.ninzin.net/x402.Nano](https://csi.ninzin.net/x402.Nano/).
+The intended documents are [Protocol Specification](../protocol.md), [Track A](../extensions/track-a-nanotxn.md), and [Track B](../extensions/track-b-nanosignature.md). The package handlers and demo are not yet one conforming implementation; see the [audit](../audits/protocol-consistency-audit.md) and [decision record](../architecture/mechanism-decision.md). The canonical repository is [CasualSecurityInc/x402.Nano](https://github.com/CasualSecurityInc/x402.Nano); the evolving docs are published at [csi.ninzin.net/x402.Nano](https://csi.ninzin.net/x402.Nano/).
 
 ## External references checked
 
