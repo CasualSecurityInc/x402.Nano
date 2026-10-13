@@ -3,7 +3,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(defineConfig({
     title: "x402.Nano",
-    description: "Feeless, instant machine-to-machine payments via HTTP 402 using Nano cryptocurrency",
+    description: "Draft specification for Nano payment mechanisms under x402 v2.",
     base: '/x402.Nano/',
     head: [
         ['meta', { name: 'google-site-verification', content: 'VgY_8BRCQtKfSIeArkhfYHFkP8q5YL9vELKICxFOlmQ' }]
@@ -39,11 +39,13 @@ export default withMermaid(defineConfig({
                     { text: 'Protocol', link: '/protocol' },
                     { text: 'Track A: nanoTxn', link: '/extensions/track-a-nanotxn' },
                     { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' },
-                    { text: 'Ecosystem', link: '/ecosystem' },
-                    { text: 'Consistency audit', link: '/audits/protocol-consistency-audit' },
-                    { text: 'Mechanism decision', link: '/architecture/mechanism-decision' },
-                    { text: 'Implementation brief', link: '/adoption/nano-x402-implementation-brief' },
-                    { text: 'Implementation report', link: '/implementation-report' }
+                    { text: 'Ecosystem', link: '/ecosystem' }
+                ]
+            },
+            {
+                text: 'Project status',
+                items: [
+                    { text: 'Implementation conformance status', link: '/audits/protocol-consistency-audit' }
                 ]
             },
             // {

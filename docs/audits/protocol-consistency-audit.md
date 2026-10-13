@@ -1,11 +1,13 @@
 ---
-title: Protocol consistency audit
+title: Implementation conformance status
 ---
 
-# Protocol consistency audit
+# Implementation conformance status
 
-**Status:** Audit snapshot, 2026-10-12
+**Status:** Historical audit snapshot, 2026-10-12
 **Checkout:** `main`, `ade8af2` (`site: comment out demo links, update x402 link to x402.org`)
+
+> **Scope recheck — 2026-10-13:** A path-level comparison of `ade8af2..01d091c` found no intervening changes under `packages/`, `examples/`, `site/protected-resource-demo-server/`, or `test/` since the audited checkout. The code-specific findings therefore remain applicable to those unchanged paths. This comparison was not a new end-to-end conformance review.
 
 ## Finding
 
@@ -45,4 +47,4 @@ Existing tests include package-level duplicate settlement and session-spoofing c
 
 ## Required next step
 
-Before describing either track as a conforming reference implementation, select a challenge-binding and idempotent settlement contract, then port one track end to end across public types, client, facilitator, examples, tests, and docs. The architecture decision record selects Track B as the review target while recording that it is not yet safe to call production-ready or stateless.
+Before describing either track as a conforming reference implementation, select a challenge-binding and idempotent settlement contract, then port one track end to end across public types, client, facilitator, examples, tests, and docs. This audit does not select a production candidate.

@@ -2,61 +2,39 @@
 title: Ecosystem
 ---
 
-# Nano x402 Ecosystem
+# Nano x402 ecosystem
 
-**Last Updated**: 2026-05-09
+**Last reviewed:** 2026-10-13
 
-## Purpose
+This page is a limited source comparison. It does not rank implementations, establish their security properties, or make a production-readiness claim.
 
-This appendix maps the current Nano + x402 implementation landscape. The space is early, and multiple implementation styles can coexist:
+## Scope
 
-- Reference-first implementations that optimize for simplicity and onboarding
-- Production-focused implementations that optimize for security controls and high-throughput operations
+- [`@x402nano/exact`](https://github.com/x402nano/exact), reviewed at commit `13462c344c7f3c3971a483d6cf5efa780b0ca05f` (2026-09-13).
+- This repository's draft specification and its [implementation conformance status](./audits/protocol-consistency-audit.md).
 
-It is not a "winner/loser" comparison.
+Both describe Nano payments under x402 v2's `scheme: "exact"`. This is useful interoperability context; it does not prove that their payloads, lifecycle behavior, or deployments are interchangeable.
 
-## Context
+Two related projects named in earlier revisions of this page are outside the scope of this snapshot and were not reviewed here: [NanoRoute](https://github.com/robgilmore26/nanoroute) and `isac-0000/x402Nano-API`. No link is given for the second, because that repository path did not resolve when checked on 2026-10-13. Nothing here characterizes either project.
 
-A visible implementation in this landscape is `@x402nano/facilitator`, which presents a lightweight facilitator flow for Nano over x402. x402.Nano targets the same broad problem space, with additional mechanism-level and operational features for machine-to-machine workloads.
+## Observed design choices
 
-## Comparison Scope
+| Area | `@x402nano/exact` | x402.Nano draft |
+| --- | --- | --- |
+| Payment model | Client creates a signed Nano state send block. | Track A also uses a signed block; Track B proposes an on-chain payment followed by a NOMS proof. |
+| Facilitator role | Verifies a supplied block against the current account state and submits it through Nano RPC. | Track A describes verify-and-broadcast; Track B describes verify-only proof checking. |
+| Challenge data | Standard x402 payment requirements, including `maxTimeoutSeconds`. | Adds proposed track-specific fields under `extra`, including expiry and, for Track B, a nonce. |
+| Current status | An independently maintained implementation. | Draft specification; this repository has no end-to-end conforming implementation. |
 
-This comparison focuses on publicly observable implementation characteristics and documented behavior. It is not a claim about maintainership authority, ecosystem governance, or long-term roadmap quality.
+The `@x402nano/exact` facilitator source checks the supplied block's destination, frontier, balance decrement, proof of work, and signature before calling its block-processing helper. That is the facilitator implementation inside the `exact` package (`src/typescript/facilitator/scheme.ts`), which is a different artifact from the separately published `@x402nano/facilitator` package; the latter was not reviewed for this page. The reviewed source does not by itself define the resource server's issuance, replay, or recovery policy. Those are deployment and integration questions, not conclusions about the package's security.
 
-## Side-by-Side Snapshot
+## Open interoperability work
 
-| Dimension | `@x402nano/facilitator` (reference-style) | x402.Nano (production-oriented) |
-|---|---|---|
-| Primary posture | Minimal facilitator integration | Session-bound mechanism profile + facilitator/client libraries |
-| Typical fit | Quick adoption, lower operational complexity | High-frequency APIs, stricter payment/session controls |
-| State model | Thin request-layer wrapper around external scheme libraries | Explicit session registry and verification invariants |
-| Proof binding | Delegated to scheme/dependency behavior | Session-bound amount + tag-based binding model |
-| Replay hardening | Delegated to scheme/dependency behavior | Local spent-set replay checks plus network checks |
-| Session spoofing | Delegated to scheme/dependency behavior | Session registry with issued-requirements verification |
-| Reliability controls | Basic process + RPC wiring in facilitator service | Confirmation retry/failover-oriented behavior in RPC/client paths |
-| Throughput path | Single-account flow simplicity | Address pool abstraction with planned sharded-pool extension |
-| Code size | ~210 lines (index.js) | ~625 lines (handler.ts) + supporting packages |
+Implementers need compatible answers for at least these lifecycle questions:
 
-## Security Model Comparison
+1. How a resource server preserves the payment requirements it issued and matches a retry to them.
+2. What happens when a Nano node accepted a block but the facilitator or client lost the response.
+3. How duplicate or concurrent settlement attempts are made idempotent across restarts and workers.
+4. How challenge expiry is enforced without accepting a payment for a different request.
 
-- **`@x402nano/facilitator`** relies on perimeter bearer-token authentication (optional) and delegates replay protection, spent-set tracking, and session management to upstream scheme libraries. `paymentRequirements` is accepted directly from the request body with no server-side issuance verification.
-- **x402.Nano** maintains an explicit session registry with cryptographic binding — requirements are server-generated and verified on retry, preventing forged or mutated payment claims. Spent-set tracking, confirmation retry logic, and tag-based session binding operate at the facilitator layer.
-
-The delegation model of `@x402nano/facilitator` is valid when the operator controls both Resource Server and Facilitator. x402.Nano's self-contained security model is designed for scenarios where explicit verification invariants are required at the facilitator layer.
-
-## What This Means Strategically
-
-Both approaches are useful:
-
-1. **Reference baseline for interoperability** — Lightweight facilitators serve as an interoperability target for baseline x402 compatibility testing.
-2. **Differentiation for demanding workloads** — x402.Nano's value proposition is strongest where session security, replay resistance, and throughput control are hard requirements (e.g. AI inference APIs, agent marketplaces, high-traffic paid endpoints).
-3. **Ecosystem-positive contribution path** — Some hardening utilities (replay tracking helpers, confirmation handling patterns) may be good candidates for upstream collaboration in shared Nano/x402 tooling.
-4. **Security model transparency** — Each approach documents its trust assumptions openly, letting integrators choose the posture that matches their threat model.
-
-## Positioning Guidance (External)
-
-When describing the ecosystem publicly:
-
-- Prefer "complementary implementation styles" over competitive framing
-- Prefer "reference-style" and "production-oriented" over "basic" and "advanced"
-- Ground claims in testable behavior and documented invariants, not branding language
+The x402.Nano draft proposes answers for some of these questions, while the [implementation conformance status](./audits/protocol-consistency-audit.md) records where the checked code does not yet demonstrate them. Cross-implementation tests covering these cases may help interoperability without introducing another wire dialect.

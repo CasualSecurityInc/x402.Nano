@@ -2,50 +2,26 @@
 title: Intro
 ---
 
-# x402.Nano — Introduction
+# x402.Nano
 
-x402.Nano defines a per-request HTTP 402 payment profile for access to web resources and APIs using Nano (XNO) as the payment rail. It implements `scheme: "exact"` with payments settled instantly and feelessly, eliminating gas calculations and smart-contract overhead.
+**Status: Draft specification.** x402.Nano proposes two Nano-specific payment mechanisms for the x402 v2 `exact` payment scheme. `exact` is the x402 payment scheme; `nanoTxn` and `nanoSignature` are proposed mechanisms under that scheme, not alternative schemes.
 
-## Why Nano for x402?
+The `network: "nano:mainnet"` identifier follows [OpenRai Initiative Standard 006, Nano CAIP Identifiers](https://github.com/OpenRai/Standards/blob/main/rfcs/ORIS-006.md), which specifies the CAIP-2 chain ID for Nano mainnet and defines no testnet, beta, devnet, or local chain ID. ORIS-006 is itself an Implementation Draft. Assets are XNO, in raw units.
 
-Nano's feeless, sub-second finality makes it a natural fit for per-request micropayments. Unlike EVM-based exact schemes that rely on pre-signed contract calls, Nano's block-lattice design allows direct account-to-account transfers that can be verified on-ledger in real time. This spec provides two concrete mechanisms for binding those payments to HTTP requests, each optimized for different deployment constraints.
+## Implementation status
 
-## Two Complementary Mechanisms
+The current packages and demo do not implement either proposed track end to end. They contain older and divergent flows. Track B also has unresolved challenge-binding, durable idempotency, and recovery requirements. It must not be treated as production-ready or as a recommended deployment path.
 
-The specification introduces two mechanism tracks under the same `scheme: "exact"` framework, each optimized for different deployment constraints:
+Read the [implementation conformance status](./audits/protocol-consistency-audit.md) before using the draft as an implementation contract.
 
-- **Track A — `nanoTxn`** (signed-block): The client constructs and signs a full Nano state send block and passes it to the Facilitator, which validates and broadcasts it via the `process` RPC. Analogous to EVM's exact scheme. Best suited for single-purpose or agent wallets where the sending account's frontier is under programmatic control, as unrelated account activity between block construction and broadcast will invalidate the block.
+## Proposed mechanisms
 
-- **Track B — `nanoSignature`** (post-payment proof): The client submits the Nano transaction on-chain themselves, then proves sender ownership to the Facilitator via a NOMS (ORIS-001) signature over the block hash. The Facilitator is verify-only — it never touches funds, holds keys, or submits anything to the network. Avoids the frontier dilemma entirely and is the recommended path for public-facing resources.
+- **Track A — `nanoTxn`**: a client signs a Nano state send block; a facilitator validates and broadcasts it. The payer's account frontier can change before broadcast, so callers need a recovery path for stale blocks.
+- **Track B — `nanoSignature`**: a client pays on-chain and presents a signed proof tied to a challenge. The draft describes the proof format, but its security and recovery requirements have not yet been demonstrated in this repository.
 
-A Facilitator MAY advertise one or both tracks in the `accepts` array of a 402 response, allowing flexibility across different integration scenarios.
+## Reading the draft
 
-Both mechanisms use `network: "nano:mainnet"` per OpenRai ORIS-006.
-
-## HTTP 402 Flow
-
-Both tracks follow the HTTP 402 flow:
-1. Client requests a protected resource
-2. Server responds with `402 Payment Required` and payment parameters
-3. Client sends a Nano block to the specified account
-4. Client retries the request with proof of payment
-5. Server verifies and grants access
-
-The mechanism track determines what "proof" means and how the Facilitator validates it. Full protocol details and implementation guidance are available in the detailed specification.
-
-## Architecture
-
-The protocol defines three primary actors:
-
-- **Client**: A user agent (browser, CLI, app) that receives 402 challenges, pays on Nano, and retries with proof.
-- **Resource Server**: The public HTTP endpoint that issues 402 challenges and serves content. It does not touch the blockchain directly.
-- **Facilitator**: A backend service that interfaces with the Nano network — verifying blocks, checking confirmation status, and preventing double-spends. It holds no keys and controls no funds.
-
-These can be deployed as a single monolithic service or as separate components, depending on scale and operational needs.
-
-## Next Steps
-
-- **[Protocol Specification](./protocol.md)**: Shared architecture, threat model, and security analysis.
-- **[Track A: nanoTxn](./extensions/track-a-nanotxn.md)**: Signed-block wire format and verification.
-- **[Track B: nanoSignature](./extensions/track-b-nanosignature.md)**: NOMS post-payment proof wire format and verification.
-- **[Ecosystem Landscape](./ecosystem.md)**: Side-by-side comparison with other Nano x402 implementations.
+- [Specification](./protocol.md): shared model, constraints, and security requirements.
+- [Track A: nanoTxn](./extensions/track-a-nanotxn.md): signed-block mechanism.
+- [Track B: nanoSignature](./extensions/track-b-nanosignature.md): post-payment proof mechanism.
+- [Ecosystem](./ecosystem.md): a limited, source-backed comparison.
