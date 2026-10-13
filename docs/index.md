@@ -17,7 +17,7 @@ Read the [implementation conformance status](./audits/protocol-consistency-audit
 ## Proposed mechanisms
 
 - **Track A — `nanoTxn`**: a client signs a Nano state send block; a facilitator validates and broadcasts it. The payer's account frontier can change before broadcast, so callers need a recovery path for stale blocks.
-- **Track B — `nanoSignature`**: a client pays on-chain and presents a signed proof tied to a challenge. The draft describes the proof format, but its security and recovery requirements have not yet been demonstrated in this repository.
+- **Track B — `nanoSignature`**: a client pays on-chain, then presents a block reference together with an off-chain signature over that reference and the challenge data. The signature demonstrates control of the sending key. It does not by itself establish that the transfer was intended to satisfy a particular HTTP request. Proof-of-purchase binding, idempotent redemption, and recovery after failure are unresolved and are not demonstrated in this repository.
 
 ## Reading the draft
 
