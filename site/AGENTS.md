@@ -1,117 +1,232 @@
 # AGENTS.md for `site/`
 
----
-
-## 🛠️ Environment & Node.js
-
-- **Node.js**: Always use the default system Node version (**v25.7.0+**).
-- **nvm**: Do **NOT** use `nvm` commands (`nvm use`, `nvm ls`, etc.) in this project.
-- **Package Manager**: Always use `pnpm` (v10+).
+Scope: this file describes **how the site is built, published, and previewed**. It
+deliberately does not restate the payment mechanism, verification rules, or
+expiry semantics. Those live in `../docs/` and are owned by
+[`docs/AGENTS.md`](../docs/AGENTS.md). If you need a spec fact, read it there
+rather than adding a second copy here.
 
 ---
 
-## 🌐 Documentation Website
+## 🛠️ Environment & Tooling
 
-This directory contains the VitePress project for the x402.Nano documentation.
+- **Node.js**: use the system default `node`. Do **not** run `nvm use`, `nvm ls`,
+  or any other `nvm` command in this project. CI pins `24.x`; local versions may
+  be newer. `engines` requires `>=18`.
+- **Package Manager**: `pnpm`. The pinned version is in the root `package.json`
+  `packageManager` field — let pnpm enforce it, do not install a global pnpm.
+- **Install**: always `pnpm install --frozen-lockfile`. CI fails on a lockfile that
+  does not match `package.json`.
+
+---
+
+## 🌐 What This Directory Is
+
+`site/` holds the VitePress project plus the live demo facilitator server. The
+canonical documents are **not** here — they are in `../docs/`. This directory only
+copies, renders, and serves them.
+
+---
+
+## 🏗️ Documentation Pipeline
+
+```
+../docs/*.md  ──►  scripts/prepare-rev.js  ──►  gen/docs/  ──►  VitePress  ──►  gen/dist/
+   (source)            (copy + rename)          (generated)                  (output)
+```
+
+**Never edit `gen/`.** It is deleted and regenerated on every build. Edit the
+source under `../docs/`, then rebuild.
+
+### Current copy map
+
+`scripts/prepare-rev.js` performs these copies. This list is the authority — if
+it drifts, the build will 404.
+
+| Source | Destination |
+|---|---|
+| `../docs/index.md` | `index.md` |
+| `../docs/protocol.md` | `protocol.md` |
+| `../docs/nano-x402-landscape.md` | `ecosystem.md` |
+| `../docs/audits/protocol-consistency-audit.md` | `audits/protocol-consistency-audit.md` |
+| `../docs/track-a-nanotxn.md` | `extensions/track-a-nanotxn.md` |
+| `../docs/track-b-nanosignature.md` | `extensions/track-b-nanosignature.md` |
+| `protected.md`, `demo-track-a.md`, `demo-track-b.md` | same basename at site root |
+
+Note the **renames**: `nano-x402-landscape.md` is served as `/ecosystem`, and the
+audit keeps a nested `audits/` path. Relative links inside `../docs/*.md` must
+match the *destination* layout, not the source layout.
+
+### Publication policy
+
+Three documents are intentionally **repository-only**. They are not copied into
+`gen/docs`, so they never appear on the site:
+
+- `../docs/architecture/mechanism-decision.md`
+- `../docs/adoption/nano-x402-implementation-brief.md`
+- `../docs/implementation-report.md`
+
+They are internal engineering records, not specification. Keep them in the repo;
+do not add them to `prepare-rev.js` without an explicit decision.
+
+**Publishing a new page requires three coordinated edits:**
+
+1. Add the file to `coreFiles` or `extensionFiles` in `scripts/prepare-rev.js`.
+2. Add a matching entry to `themeConfig.sidebar` in `.vitepress/config.mts`.
+3. Link it from an existing page, or readers cannot reach it.
+
+Omitting step 2 produces a silent orphan page: it builds, but nothing navigates
+to it.
+
+### ⚠️ Agent policy
+
+1. **Sidebar paths must match generated paths.** `config.mts` links are resolved
+   against `gen/dist`. A typo is a build failure, not a cosmetic issue.
+2. **No string rewriting.** `prepare-rev.js` copies files verbatim. It does not
+   rewrite hardcoded prose. If a phrase appears in several `site/*.md` files, you
+   must update each one by hand.
+3. **Run `site:preview` before you trust a local build.** See below.
+
+---
+
+## 🚀 Build & Preview
+
+```bash
+pnpm --dir site site:build     # prepare + build static output
+pnpm --dir site site:preview   # serve the built output
+```
+
+`site:preview` serves at **`http://localhost:4173/x402.Nano/`** — the
+`/x402.Nano/` base path comes from `base` in `.vitepress/config.mts` and is
+required. Requesting `/` returns 404; that is expected, not a broken build.
+
+Use `site:preview` rather than `site:dev` when you are checking what will
+actually ship. `site:dev` serves from memory and will not catch link problems the
+static build treats as fatal.
+
+> **Build order matters.** CI runs `pnpm build` *before* `site:build`, because the
+> site depends on the workspace packages. Running `pnpm typecheck` against a tree
+> with no `dist/` fails with TS6305 "Output file has not been built from source
+> file". Run `pnpm build` first.
 
 ---
 
 ## 🚀 Deployment Architecture
 
-**Two separate deployment targets:**
+Two independent targets. Deploying one does not deploy the other.
 
-| Component | Platform | URL | Workflow |
-|-----------|----------|-----|----------|
-| **Static Docs** | GitHub Pages | `https://csi.ninzin.net/x402.Nano/` | `.github/workflows/deploy.yml` |
-| **Demo Server(s)** | fly.io | Separate subdomain(s) | Manual / `pnpm deploy:fly:*` |
+| Component | Platform | URL | Trigger |
+|---|---|---|---|
+| **Static docs** | GitHub Pages (via Cloudflare) | `https://csi.ninzin.net/x402.Nano/` | `.github/workflows/deploy.yml`, **push to `main` only** |
+| **Demo server** | fly.io | separate subdomain | manual, `pnpm --dir site deploy:fly:mainnet` |
 
-**Important:** The Protected Resource demo server(s) deploy to an **external hosting platform (fly.io)** and must be treated separately from the docs site. The static docs are served from GitHub Pages (CasualSecurityInc org) behind a CloudFlare proxy.
+### Before you push
+
+- **The Pages workflow only runs on `main`.** Pushing a feature branch does not
+  deploy, and therefore gives you no hosted preview. To check a branch visually,
+  build and `site:preview` it locally.
+- **Actions are pinned to full commit SHAs** and Dependabot tracks them weekly.
+  When bumping one, update the `# vX.Y.Z` comment next to it in the same commit.
+- **Runner and Node are pinned** to `ubuntu-24.04` / Node 24. Do not drift these
+  casually; `main` publishes from this workflow.
+- **npm release is manual.** `release.yml` is `workflow_dispatch` only, by
+  deliberate decision while the specification is a draft. Do not re-add a `push`
+  trigger without saying so in the commit.
 
 ---
 
-### 🏗️ Build System (`scripts/prepare-rev.js`)
+## 🚀 Demo Server
 
-We do **not** edit markdown files in `site/gen/docs/` directly. Instead, we generate them from `../docs/` at build time.
+**Location**: `protected-resource-demo-server/` — an Express server that acts as
+an x402 facilitator for the interactive demo pages.
 
-**The Script Logic:**
-1.  **Cleans**: Deletes `site/gen/docs/`.
-2.  **Copies**:
-    *   `../docs/index.md` -> `site/gen/docs/index.md`
-    *   `../docs/protocol.md` -> `site/gen/docs/protocol.md`
-    *   `../docs/track-a-nanotxn.md` -> `site/gen/docs/extensions/track-a-nanotxn.md`
-    *   `../docs/track-b-nanosignature.md` -> `site/gen/docs/extensions/track-b-nanosignature.md`
-3.  **Copies Demo Pages**: `protected.md`, `demo-track-a.md`, `demo-track-b.md`
+Mounted routes (`index.ts`):
 
-**⚠️ AGENT POLICY**
-1. **Hardcoded Protocol References**: The build script does not perform magic string replacement for document bodies. You must manually grep and update any hardcoded string matches (e.g. `using the x402.Nano protocol flow`) across `site/*.md` whenever you change the protocol.
-2. **No NVM**: Never attempt to change Node versions using `nvm`. Stick to the system default node.
-3. **Calculation Logic**: Always use the `@nanosession/core` utility `calculateTaggedAmount` for anything involving payment amounts. Never calculate BigInt sums for payment decomposition (`resourceAmountRaw + tagAmountRaw`) manually in UI or server code.
+| Path | Router |
+|---|---|
+| `/health` | inline |
+| `/api/protected` | `routes/protected.ts` |
+| `/api/poll-for-demo` | `routes/poll.ts` |
+| `/api/demo` | `routes/demo-tracks.ts` |
 
-### 🎨 Theme & Config
+`routes/status.ts` exists but is **not** mounted in `index.ts`. If you add a
+route, mount it there too, or it is dead code.
 
-*   **Config**: `.vitepress/config.mts`
-    *   Defines the Sidebar and Nav menu.
-    *   **CRITICAL**: The paths in `config.mts` MUST match the generated paths from `prepare-rev.js`.
-*   **Theme**: `.vitepress/theme/`
-    *   Custom CSS (`custom.css`) for "Modern, Serious, Responsive" look.
-    *   **Paywall Components**: Contains `NanoPaywall.vue` and composables (`usePaymentStatus.ts`, `useXnapSnap.ts`) for the live 402 demo.
+### Configuration
 
-### 🚀 Demo Server (Protected Resource Facilitator)
-
-**Location**: `site/protected-resource-demo-server/`
-
-The demo server is a live backend Node.js server that acts as an x402 Facilitator. It runs concurrently with VitePress in dev mode via `pnpm run dev:demo`.
-
-**Deployment**: Fly.io (separate from docs site)
-- Mainnet: `pnpm deploy:fly:mainnet`
-
-**Core Mechanics:**
-1. **Requirements Generation**: `routes/protected.ts` receives client requests, generates a cryptographically secure `sessionId` + `tag` via `@nanosession/facilitator`, and returns the `HTTP 402 Payment Required` payload.
-2. **Demo Destination Allocation**: `protected-resource-demo-server/destination-pool.ts` can derive a bounded low-index pay-to address pool from `NANO_TEST_SEED` for per-challenge demo destinations. If no test seed is configured, the demo falls back to `NANO_SERVER_ADDRESS`.
-3. **Polling Helper**: `routes/poll.ts` lets the browser demo look up a matching send by `payerAccount + payTo + amount` after an external wallet payment.
-
-**Configuration (`.env`):**
-
-To run the server, `site/.env` MUST be configured (see `site/.env.example`):
-- `NANO_RPC_URL` (for REST verification)
-- `NANO_SERVER_ADDRESS` (fixed fallback demo destination if no test seed is configured)
-- `NANO_TEST_SEED` (preferred for deriving a bounded per-challenge demo destination pool)
-
-### 🖥️ Local Development with tmux
-
-**Always use tmux to run the demo servers** for persistent, detachable sessions.
+Read from the **repository root `.env`** — there is no `site/.env`.
+`demo:mainnet` sets `DOTENV_CONFIG_PATH=../.env`, and `index.ts` falls back to
+`../../.env`.
 
 ```bash
-# Create a new tmux session named "demo" and start servers
+cp .env.example .env
+```
+
+Required at startup — the process exits without them:
+
+- `NANO_RPC_URL`
+- `NANO_SERVER_ADDRESS` **or** `NANO_TEST_SEED`
+
+If `NANO_TEST_SEED` is set, the demo derives a bounded pool of per-invoice
+destination addresses from it; otherwise it falls back to the single
+`NANO_SERVER_ADDRESS`. Never commit a real seed. `.env` is gitignored.
+
+The listen port defaults to `3001` but is parsed from
+`VITE_TEST_AND_DEMO_SERVER_URL` when set.
+
+---
+
+## 🖥️ Local Development
+
+Run the servers in tmux so they survive detachment.
+
+```bash
 tmux new -s demo
-cd /Users/conny/Developer/CasualSecurityInc/x402.NanoSession/site
+cd /Users/conny/Developer/CasualSecurityInc/x402.Nano/site
 pnpm dev:demo
 
 # Detach: Ctrl+B then D
 # Reattach: tmux attach -t demo
-# Kill session: tmux kill-session -t demo
+# Kill: tmux kill-session -t demo
 ```
 
-**Commands:**
 | Command | Purpose |
-|---------|---------|
-| `pnpm dev:demo` | All: site watcher + VitePress (5173) + demo server (3001) |
-| `pnpm site:dev` | Site only: source watcher + VitePress (5173) |
-| `pnpm site:build` | Build static site |
-| `pnpm demo:mainnet` | Demo server only: mainnet (3001) |
+|---|---|
+| `pnpm --dir site dev:demo` | site watcher + VitePress + demo server |
+| `pnpm --dir site site:dev` | site only, hot reload on `../docs/*.md` changes |
+| `pnpm --dir site site:build` | production build |
+| `pnpm --dir site site:preview` | serve the production build |
+| `pnpm --dir site demo:mainnet` | demo server only |
+| `pnpm --dir site test:server` | demo server tests |
 
-**Note:** `site:dev` watches `../docs/*.md` and `protected.md` for changes and rebuilds automatically.
+Ports: VitePress **5173**, demo server **3001**.
 
-**Restarting servers in tmux:**
+Restarting inside an existing session:
+
 ```bash
-tmux send-keys -t demo C-c          # Stop current process
-tmux send-keys -t demo 'pnpm dev:demo' Enter  # Start servers
+tmux send-keys -t demo C-c
+tmux send-keys -t demo 'pnpm dev:demo' Enter
 ```
 
-### 🐛 Known Issues / Debugging
+---
 
-*   **404 Errors**: If the site returns 404s, it usually means `prepare-rev.js` failed to generate files OR the `config.mts` paths don't match the generated filenames.
-*   **Dead Links**: VitePress build will FAIL if there are broken internal links.
-    *   *Fix*: Ensure `prepare-rev.js` correctly rewrites links from the source Markdown to the new web paths.
-*   **EADDRINUSE (Port 3001)**: If `pnpm run dev:demo` fails saying port 3001 is in use, an old `tsx demo-server/index.ts` process is still running. Use `killall -9 node tsx` to free the port.
-*   **Wallet Precision Truncation Bug (Nault)**: The Nault consumer wallet currently has a bug where it truncates outgoing fractions to 6 decimal places, destroying the required x402.Nano dust tag and causing payments to be ignored by the WebSocket. Test using Natrium, the Xnap plugin, or `scripts/test-payment.ts`.
+## 🐛 Known Issues
+
+- **Dead links fail the build.** VitePress treats a broken internal link as a
+  build error, which fails CI. After adding or moving a page, run
+  `site:build` locally before pushing.
+- **404s usually mean the copy map drifted.** If a page 404s, check
+  `prepare-rev.js` and `config.mts` agree on that path before debugging anything
+  else.
+- **Port conflicts.** Both development ports can be left occupied by a previous
+  session: 5173 by a VitePress dev server, 3001 by a demo server. Check with
+  `lsof -nP -iTCP:5173 -sTCP:LISTEN` before assuming your own run failed, and
+  confirm with the owner before killing a process you did not start.
+- **`dev:demo` breaks if `VITE_ENABLE_TESTNET_TAB=true`.** `scripts/dev-demo.sh`
+  calls `pnpm demo:testnet`, which is not defined in `site/package.json`. Leave
+  the flag unset unless you add that script.
+- **`typecheck` fails with TS6305 on a clean tree.** Run `pnpm build` first —
+  see Build & Preview above.
+- **Mainnet integration tests are not part of the default test run.** They need
+  `NANO_TEST_SEED` and spend real XNO. Do not run them casually, and do not
+  report them as passing if they were skipped.
