@@ -4,10 +4,24 @@ title: Protected Content Demo
 
 # x402.Nano — Protected Content Demos
 
-**New dedicated flows (recommended):**
+> 🚧 **The interactive demos are returning shortly.**
+>
+> The payment demos are being rebuilt. The links below are paused so nobody
+> lands on a half-working flow.
 
-- [Track A (nanoTxn) Demo](/demo-track-a) — signed-block path with stable per-invoice deposit
-- [Track B (nanoSignature) Demo](/demo-track-b) — NOMS post-payment proof path with stable per-invoice deposit
+## New dedicated flows
+
+<!--
+  Demo links paused 2026-10-14. Restore verbatim when the flows are live again:
+
+  **New dedicated flows (recommended):**
+
+  - [Track A (nanoTxn) Demo](/demo-track-a) — signed-block path with stable per-invoice deposit
+  - [Track B (nanoSignature) Demo](/demo-track-b) — NOMS post-payment proof path with stable per-invoice deposit
+-->
+
+- 🚧 **Track A (nanoTxn) Demo — returning shortly.** Signed-block path with stable per-invoice deposit.
+- 🚧 **Track B (nanoSignature) Demo — returning shortly.** NOMS post-payment proof path with stable per-invoice deposit.
 
 Both flows give you:
 - A unique deposit address that is **stable until you click the big red "Restart session"** button (reloads, network hiccups, Cmd-R all preserve the session = deposit = x402 challenge).
@@ -18,7 +32,7 @@ Both flows give you:
 
 ## Legacy single demo (being phased out)
 
-The content below describes the older undifferentiated flow. Use the two dedicated pages above for accurate Track A / Track B experiences.
+The content below describes the older undifferentiated flow. The dedicated Track A / Track B pages are paused along with the rest of the demo.
 
 ## Flow
 
