@@ -39,18 +39,39 @@ The important sequence is:
 
 ## Demo Notes
 
-- This demo uses a server-chosen `nano_...` destination address as the pay-to target (in production, a NanoNym root `nnym_...` would be used for stealth derivation).
+- This demo uses a server-chosen `nano_...` destination address as the pay-to target.
+
+<!--
+  Withheld pending a separate NanoNym mechanism declaration. NanoNym is a
+  distinct payment construct and is not one of the mechanisms described in
+  these docs, so it is not claimed as their production form:
+
+  "This demo uses a server-chosen `nano_...` destination address as the
+  pay-to target (in production, a NanoNym root `nnym_...` would be used for
+  stealth derivation)."
+-->
+
 - The `/api/poll-for-demo` endpoint is a demo-only helper. In a production x402 client, the wallet or payment agent would return the send hash directly after publishing the block.
 - Settlement policy and access policy are separate concerns. This demo grants per-payment access; a deployment could instead issue a reusable credential after settlement.
 
 ## Security
 
-This flow implements the NanoNym receipt exact path (Path B) from the protocol:
+This flow implements a legacy payment flow:
 
 - **Pay first**: the client pays before receiving access, avoiding the frontier dilemma of pre-signed blocks.
-- **Exact raw amounts**: the challenge amount includes a unique tag to prevent cross-challenge borrowing.
 - **Spent-hash tracking**: the server rejects duplicate send hashes, preventing replay across challenges.
 
-This demo does **not** implement NanoNym witness verification (the client would need to derive a stealth destination from a `nnym_...` root and submit witness material in the retry). In production, NanoNym witness material adds receipt-theft resistance by binding the payment to a specific challenge's derivation path.
+<!--
+  Withheld pending a separate NanoNym mechanism declaration. The original
+  text asserted an unverified receipt-theft resistance property for NanoNym
+  witness material, which should not appear in these docs without a
+  reviewed specification of its own:
+
+  "This demo does **not** implement NanoNym witness verification (the client
+  would need to derive a stealth destination from a `nnym_...` root and submit
+  witness material in the retry). In production, NanoNym witness material
+  adds receipt-theft resistance by binding the payment to a specific
+  challenge's derivation path."
+-->
 
 See the [Protocol Specification](/protocol) for the full wire format and verification rules.
