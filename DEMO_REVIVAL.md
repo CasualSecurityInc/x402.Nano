@@ -1,12 +1,15 @@
 # DEMO_REVIVAL
 
 **Status:** Proposal — no option chosen, nothing implemented
-**Date:** 2026-10-14
+**Date:** 2026-10-14 (updated 2026-10-15)
 **Scope:** Interactive payment UX for the protected-resource demo
 
 Internal design note. Not published to the site, and not specification. For the
 mechanism contracts themselves see `docs/protocol.md` and the track documents;
 this file only covers how a visitor pays in the demo.
+
+> Sections 1–8 are the original analysis and options. Section 9 records what
+> changed after the site was paused. Read 9 before acting on anything here.
 
 ---
 
@@ -241,5 +244,75 @@ best-effort until it is exercised end to end.
 - Changing any wire format or `PaymentRequirements` shape.
 - Adding a third Nano payment dialect to make the wallet-less path formally
   verifiable. If that is ever wanted it needs its own mechanism declaration,
-  reviewed on its own terms — which is also where NanoNym belongs
-  (see `site/protected.md`).
+  reviewed on its own terms — which is also where NanoNym belongs. The NanoNym
+  text has since been withheld from `site/protected.md`; see 9.2.
+
+---
+
+## 9. Status after the site was paused
+
+### 9.1 What shipped
+
+| Commit | Change |
+|---|---|
+| `40b3bff` | Demo links replaced with a "🚧 returning shortly" marker; NanoNym withheld |
+| `4e95c84` | NanoNym withheld from `site/protected.md` |
+| `3d86055` | This document committed (unpublished) |
+
+Deployed and live. No anchor anywhere in the built site points to `/protected`,
+`/demo-track-a`, or `/demo-track-b`. All visitor-facing entry points now show the
+marker instead.
+
+This is a genuine pause, not a concealment: the marker states plainly that the
+demos are being rebuilt.
+
+### 9.2 NanoNym is now withheld
+
+Both NanoNym references were removed from `site/protected.md` by commenting them
+out rather than deleting. The comments record that NanoNym is a distinct payment
+construct needing its own reviewed mechanism declaration. Section 8's pointer to
+that file is therefore now a pointer to withheld text.
+
+The NanoNym string still appears in demo **server** code at
+`site/protected-resource-demo-server/routes/protected.ts:119` ("Unlocked via
+NanoNym receipt settlement"), which is served to visitors of the legacy
+`/api/protected` route. Still unresolved.
+
+### 9.3 Stale claims in the paused demo pages
+
+Both pages describe behaviour that no longer matches the code. They are unlinked
+and paused, so this is low urgency, but both statements are wrong:
+
+| File | Line | Problem |
+|---|---|---|
+| `site/demo-track-a.md` | 12 | "In the final implementation the browser will use an ephemeral payer key (LocalStorage)" — it already does, at `TrackCheckout.vue:287`. Stale future tense. |
+| `site/demo-track-b.md` | 13 | "The protocol log is intended to show the complete decoded client-side flow" — aspirational; the flow is implemented. |
+
+Both also still render the live `<TrackCheckout />` component, so they are live
+pages with stale copy, not archived pages.
+
+### 9.4 Open decision: orphan pages still ship
+
+`protected.md`, `demo-track-a.md`, and `demo-track-b.md` remain in
+`prepare-rev.js`, so they are still built into `gen/dist` and reachable by direct
+URL. Nothing links to them and navigation has them commented out
+(`config.mts:25,33,54,55`).
+
+Two defensible states, not yet chosen:
+
+1. **Keep building them.** Preserves direct-URL access for anyone who bookmarked
+   the demo, at the cost of shipping pages whose copy is stale (9.3).
+2. **Drop them from the copy map.** Cleanest — the pause becomes real rather than
+   navigational — but the demo server and `TrackCheckout.vue` become entirely
+   unreferenced by the site, and a reviewer loses any way to see the current demo
+   state without reading the source.
+
+Recommendation: option 1 until the rework lands, because the pages are the only
+remaining visual record of the demo, then drop them together with the rework.
+
+### 9.5 Unchanged by the pause
+
+Everything in sections 2–3 still holds. The lifecycle mismatch in section 2 is a
+property of the mechanisms, not of the demo UI, so it will not be resolved by
+rebuilding the page. The Track A `demo bypass` at `demo-tracks.ts:375` is still
+in the code and still reports success on a failed broadcast.
