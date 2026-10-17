@@ -4,7 +4,9 @@ title: Ecosystem
 
 # Nano x402 ecosystem
 
-**Last reviewed:** 2026-10-13
+**External source snapshot:** 2026-10-13
+
+**Local draft update:** 2026-10-16
 
 This page is a limited source comparison. It does not rank implementations, establish their security properties, or make a production-readiness claim.
 
@@ -23,10 +25,19 @@ Two related projects named in earlier revisions of this page are outside the sco
 | --- | --- | --- |
 | Payment model | Client creates a signed Nano state send block. | Track A also uses a signed block; Track B proposes an on-chain payment followed by a NOMS proof. |
 | Facilitator role | Verifies a supplied block against the current account state and submits it through Nano RPC. | Track A describes verify-and-broadcast; Track B describes verify-only proof checking. |
-| Challenge data | Standard x402 payment requirements, including `maxTimeoutSeconds`. | Adds proposed track-specific fields under `extra`, including expiry and, for Track B, a nonce. |
+| Challenge data | Standard x402 payment requirements, including `maxTimeoutSeconds`. | Revised local drafts add a profile discriminator and authenticated invoice fields under `extra`; Track B signs the invoice digest and payment hash. |
 | Current status | An independently maintained implementation. | Draft specification; this repository has no end-to-end conforming implementation. |
 
 The `@x402nano/exact` facilitator source checks the supplied block's destination, frontier, balance decrement, proof of work, and signature before calling its block-processing helper. That is the facilitator implementation inside the `exact` package (`src/typescript/facilitator/scheme.ts`), which is a different artifact from the separately published `@x402nano/facilitator` package; the latter was not reviewed for this page. The reviewed source does not by itself define the resource server's issuance, replay, or recovery policy. Those are deployment and integration questions, not conclusions about the package's security.
+
+The local execution model requires a wallet writer shared by concurrent callers
+and durable transactional redemption. Its server-allocated invoice-destination
+contract has since been withdrawn as a generic baseline because the resource
+server must support public-only receiving configuration without wallet keys, Nano
+RPC, or buyer sessions. These remain proposed contracts, not implemented capabilities. See
+[One wallet, ten concurrent purchases](./execution-model.md) for the current source
+observations, frontier counterexample, and limits of the executable model. The
+external package observations above remain scoped to the pinned snapshot.
 
 ## Open interoperability work
 

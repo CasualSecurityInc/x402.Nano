@@ -9,6 +9,13 @@ title: Implementation conformance status
 
 > **Scope recheck — 2026-10-13:** A path-level comparison of `ade8af2..01d091c` found no intervening changes under `packages/`, `examples/`, `site/protected-resource-demo-server/`, or `test/` since the audited checkout. The code-specific findings therefore remain applicable to those unchanged paths. This comparison was not a new end-to-end conformance review.
 
+> **Draft revision — 2026-10-16:** The specification has since been revised to
+> `nanoTxn/1` and `nanoSignature/2`. The historical code observations below are
+> preserved; their descriptions of the former public contract are not the current
+> requirements. The revised draft specifies invoice binding and durable redemption,
+> but no package implements it. See [the execution model](../execution-model.md).
+> Its simulated tests do not close the real-adapter or mainnet evidence gaps here.
+
 ## Finding
 
 There is no single implementation in this checkout that conforms end to end to the current dual-track specification. The latest canonical documents describe Track A (`nanoTxn`) and Track B (`nanoSignature`), but the main `@nanosession/client` and `@nanosession/facilitator` packages implement the older `nanoSession` tagged-amount flow plus a different URL-signature flow. The newer site demo has its own Track A/B handlers. Types still expose nanoMacaroon structures as well. Treat the documents as the intended design direction, not a production-ready protocol/implementation pair.

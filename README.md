@@ -4,13 +4,15 @@
 
 Implement the [HTTP 402](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402) status code using [Nano](https://nano.org/) (XNO) cryptocurrency. Zero fees. Sub-second settlement. High-frequency M2M payments.
 
-This repository contains the **x402.Nano specification** — two Nano-specific mechanisms (Track A: `nanoTxn`, Track B: `nanoSignature`) for the x402 protocol — plus reference implementations and supporting site/docs.
+This repository contains the **x402.Nano specification** — two Nano-specific mechanisms (Track A: `nanoTxn`, Track B: `nanoSignature`) for the x402 protocol — plus legacy implementation packages and supporting site/docs. Neither package flow
+conforms to the revised draft. See [One wallet, ten concurrent purchases](docs/execution-model.md)
+and the [implementation conformance status](docs/audits/protocol-consistency-audit.md).
 
 ## Why Nano for x402?
 
 - **Feeless**: Nano has no transaction fees — pay exactly what you owe
 - **Instant**: Sub-second confirmation, no block wait times
-- **Protocol-Bound**: Payment settlement is bound to an issued challenge and redeemed into a reusable capability
+- **Proposed binding**: Revised drafts bind exact payments to issued invoices and durable purchase results
 - **Simple**: `PAYMENT-REQUIRED` -> pay -> `PAYMENT-SIGNATURE` retry -> `PAYMENT-RESPONSE`
 
 The active direction in this repository is a dual-track mechanism specification (Track A: `nanoTxn`, Track B: `nanoSignature`) for settlement-bound HTTP 402 payments on Nano.

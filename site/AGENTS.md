@@ -47,6 +47,8 @@ it drifts, the build will 404.
 |---|---|
 | `../docs/index.md` | `index.md` |
 | `../docs/protocol.md` | `protocol.md` |
+| `../docs/execution-model.md` | `execution-model.md` |
+| `../docs/nano-x402-review.md` | `review.md` |
 | `../docs/nano-x402-landscape.md` | `ecosystem.md` |
 | `../docs/audits/protocol-consistency-audit.md` | `audits/protocol-consistency-audit.md` |
 | `../docs/track-a-nanotxn.md` | `extensions/track-a-nanotxn.md` |

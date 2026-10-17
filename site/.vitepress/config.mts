@@ -21,7 +21,7 @@ export default withMermaid(defineConfig({
     themeConfig: {
         nav: [
             { text: 'Intro', link: '/' },
-            { text: 'Protocol', link: '/protocol' },
+            { text: 'Specification', link: '/protocol' },
             // { text: 'Demo', link: '/protected' }
         ],
 
@@ -36,7 +36,9 @@ export default withMermaid(defineConfig({
             {
                 text: 'Specification',
                 items: [
-                    { text: 'Protocol', link: '/protocol' },
+                    { text: 'Specification', link: '/protocol' },
+                    { text: 'Review proposal', link: '/review' },
+                    { text: 'One wallet, ten purchases', link: '/execution-model' },
                     { text: 'Track A: nanoTxn', link: '/extensions/track-a-nanotxn' },
                     { text: 'Track B: nanoSignature', link: '/extensions/track-b-nanosignature' },
                     { text: 'Ecosystem', link: '/ecosystem' }
