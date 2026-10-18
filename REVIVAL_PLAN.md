@@ -1,11 +1,13 @@
-# REVIVAL_PLAN
+# x402.Nano revival: project history and status
 
-**Status:** Live working note — rewritten 2026-10-15
+**Status:** Repository-only project history and working status — reviewed 2026-10-18
 **Original authored:** 2026-06-10, as a work order
 **Scope:** x402.Nano specification direction, conformance status, and ecosystem posture
 
-**Internal. Not published. Not committed. Contains third-party project strategy —
-keep untracked.**
+**This file is tracked in GitHub but is not copied to the documentation site.** It
+preserves the project's strategy reversal and historical planning snapshots. The
+current public review draft is [`docs/nano-x402-review.md`](docs/nano-x402-review.md);
+the current repository revision is [`7c55f32`](https://github.com/CasualSecurityInc/x402.Nano/commit/7c55f32).
 
 > This file began as an imperative work order ("Your job is to…"). That framing
 > is gone because the strategy it prescribed changed mid-flight. What follows is
@@ -15,7 +17,100 @@ keep untracked.**
 
 ---
 
-## 1. Where things stand
+## Publication stepping stone, 2026-10-17
+
+Published `docs/nano-x402-review.md` at `/review` with the site pipeline, sidebar,
+intro link, and the general consumption rule. The Pages deployment succeeded for
+commit `7c55f32`. `docs/adoption/pursekeeper-review-issue.md` is a local, unsent
+draft for one `pursekeeper/api` thread. A full conforming adapter is a gate for
+adoption claims, not for asking maintainers to review the workload.
+
+ORIS-007's controlled receive acknowledgement can mark consumption on-chain when
+the facilitator has destination signing authority. This is an optional different
+custody/signing profile. It cannot replace request association and crash/retry
+recovery, and auto-receive invalidates its application-state interpretation.
+The repository-only NanoNyms evaluation records those conditions. Preparing the
+artifacts involved no financial operation or external message; the documentation
+site deployment is recorded above.
+
+## Further clarification, 2026-10-16
+
+Single-use paid entitlements require authoritative consumption state somewhere,
+whether represented as a spent set, on-chain nonce state, or a credit/redemption
+ledger. Resource servers need not host it. Ordinary x402 does not require full
+HTTP purchase intent to be encoded in the ledger transfer: the EIP-3009 flow
+signs transfer terms, not URL/method/body. Use expected requirements and v2
+payment-identifier request fingerprinting for baseline association and retries.
+A stronger payment-time HTTP commitment is optional, not an adoption gate.
+
+NanoNyms has a deployed proof of concept. Its x402 application is speculative;
+ORIS-005 may be revised directly to define that application. Do not treat the
+existing NanoNyms derivation as an unimplemented new cryptographic proposal.
+The evaluation now includes source-pinned v2 extension findings and ORIS-005
+revision notes. No external standard or deployment was changed.
+
+## Subsequent boundary correction, 2026-10-16
+
+The operator clarified that resource servers must need neither Nano RPC nor
+wallet private keys, and the baseline must allow sessionless resource servers.
+Ordinary Nano account derivation supplies no xpub. The server-allocated invoice
+contract prepared in the checkpoint below is withdrawn as a generic baseline;
+its model still demonstrates execution sequencing and a specialized stateful
+attribution contract. It does not validate that resource-server integration.
+
+`docs/architecture/nanonyms-evaluation.md` evaluates client-derived destinations
+under ORIS-002/005 with public receiving configuration, facilitator verification,
+and a separate receiving wallet. This is a specialized alternative under review,
+not an adopted mechanism. Allocation versus payment-time request commitment,
+shared replay authority, retry/expiry, notification recovery, and SDK dispatch
+remain explicit open questions. No ORIS-005 edit or external message has been
+submitted. The documentation deployment is recorded above; no financial operation
+was performed.
+
+## 2026-10-16 checkpoint — supersedes the open-work summary below
+
+The operator authorized three artifacts around the baseline of ten subagents
+sharing one logical wallet. Application callers must not manage frontier state
+or outbox lane accounts. Two independent problems must be solved: account-chain
+execution and payment-to-purchase attribution.
+
+Published or prepared locally, not sent:
+
+- Published `docs/execution-model.md`: frontier counterexample, wallet service
+  boundary, source-pinned observations, and executable comparison scope.
+- Published revised `docs/protocol.md` and track specifications: draft `nanoTxn/1` and
+  `nanoSignature/2`, trusted invoice issuance, unique non-reused seller destinations,
+  durable idempotent settlement, expiry/recovery, and request/result attribution.
+- Published `test/model/`: deterministic comparison and state-model tests.
+- Repository-only decision and adoption notes: Track B is a research candidate, not a
+  recommended deployment; both tracks require wallet coordination.
+
+The recovery-only contribution described below was too narrow. It remains useful
+prior work, but the next adoption discussion must include the shared-wallet
+concurrency workload and attribution contract. This does not assert that
+Pursekeeper lacks a wallet scheduler or is unaware of frontier changes.
+
+The model is not Nano/NOMS cryptography, OWS integration, production persistence,
+or mainnet validation. No conforming package implementation exists. No outreach,
+release, or real payment is part of this checkpoint. The Pages deployment is
+complete. The paused demo and its bypass remain unchanged and nonconforming. The
+historical missing-test list below predates the simulated tests; its real-adapter
+evidence gap still stands. The old decision-record contradiction has been
+reconciled.
+
+The earlier sections below are a historical 2026-10-15 snapshot. Their branch tip,
+open decisions, and characterization of the current draft are superseded here.
+
+---
+
+## Historical snapshot: 2026-10-15
+
+The sections below preserve a dated snapshot, not current task status. Their
+branch tip, implementation gaps, and open decisions were superseded by the
+2026-10-16/17 checkpoints above. The historical findings remain useful only with
+their dates and scope in view.
+
+### Snapshot: where things stood
 
 | | |
 |---|---|
@@ -36,7 +131,7 @@ production-readiness or comparative-security claims.
 
 ---
 
-## 2. The strategy reversal
+### The strategy reversal
 
 This is the most important thing in this file.
 
@@ -88,7 +183,7 @@ anyone. That remains a human decision.
 
 ---
 
-## 3. Deliverables: requested vs actual
+### Deliverables at that snapshot
 
 | Original ask | Actual | State |
 |---|---|---|
@@ -106,7 +201,7 @@ brief, the implementation report, and this file.
 
 ---
 
-## 4. The two biggest open gaps
+### Open gaps at that snapshot
 
 ### 4.1 No adversarial test coverage
 
@@ -153,7 +248,7 @@ do the opposite of what the public site says.
 
 ---
 
-## 5. Findings that are not recorded anywhere else
+### Findings recorded at that snapshot
 
 ### 5.1 `isac-0000/x402Nano-API` does not exist
 
@@ -194,7 +289,7 @@ track. Links are paused pending a decision.
 
 ---
 
-## 6. Terminology — still binding
+### Terminology — still binding
 
 These held throughout and were enforced in the published docs.
 
@@ -216,7 +311,7 @@ These held throughout and were enforced in the published docs.
 
 ---
 
-## 7. What comes next
+### What the plan said next at that snapshot
 
 Unordered; the point is that nothing here is started.
 
@@ -236,11 +331,12 @@ Unordered; the point is that nothing here is started.
 
 ---
 
-## 8. Standing constraints
+### Standing constraints from that snapshot
 
-- Never commit the Pursekeeper proposal, this file, or the outreach strategy.
-- Never publish internal work notes to the site. Check `prepare-rev.js` and
-  `config.mts` before assuming a repo document appears publicly.
+- Keep any separate outreach body unsent until the user has reviewed and
+  authorized it. This file is a repository-only historical note; it is not part
+  of the published site. Check `prepare-rev.js` and `config.mts` before assuming
+  a repository document appears on Pages.
 - Preserve unrelated local work. Reconcile deliberately; do not `reset` or
   `stash --discard`.
 - Do not declare conformance from a passing build.
